@@ -302,8 +302,8 @@ function runDigit(){
 }
 
 /* ---------------- boot ---------------- */
-fetch('models.json').then(r=>r.json()).then(models=>{
-  M=models;
+function start(){
+  const models = M;
   const acc={sentiment:M.sentiment.accuracy, spam:M.spam.accuracy, fakenews:M.fakenews.accuracy,
              mnist:M.mnist.accuracy, titanic:M.titanic.accuracy, house:M.house.r2,
              iris:M.iris.accuracy, wine:M.wine.accuracy, cancer:M.cancer.accuracy, heart:M.heart.accuracy};
@@ -315,7 +315,18 @@ fetch('models.json').then(r=>r.json()).then(models=>{
   document.getElementById('wine_fields').innerHTML = fieldsHTML('wine', M.wine.features, M.wine.defaults);
   document.getElementById('heart_fields').innerHTML = fieldsHTML('heart', M.heart.features, M.heart.defaults);
   document.getElementById('cancer_fields').innerHTML = fieldsHTML('cancer', M.cancer.features, M.cancer.defaults);
-}).catch(()=>{ document.querySelector('header p').textContent='Loading models… if this persists, please refresh.'; });
+}
+fetch('models.json').then(r=>{ if(!r.ok) throw 0; return r.json(); })
+ .then(m=>{ M=m; start(); })
+ .catch(()=>Promise.all([
+  'models/m_sentiment.json','models/m_spam.json','models/m_fakenews.json','models/m_tabular.json',
+  'models/m_mnist_meta.json','models/m_mnist_0.json','models/m_mnist_1.json','models/m_mnist_2.json','models/m_mnist_3.json'
+ ].map(u=>fetch(u).then(r=>r.json()))).then(parts=>{
+  M = Object.assign({}, ...parts);
+  M.mnist = Object.assign({}, M.mnist_meta, {W1: [...parts[5].W1part, ...parts[6].W1part, ...parts[7].W1part, ...parts[8].W1part]});
+  delete M.mnist_meta;
+  start();
+ }).catch(()=>{ document.querySelector('header p').textContent='Loading models… if this persists, please refresh.'; }));
 </script>
 </body>
 </html>
