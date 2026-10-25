@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Projects Lab — 15 Working Machine-Learning Apps</title>
-<meta name="description" content="Fifteen real machine-learning projects you can use right in your browser — sentiment analysis, spam detection, fake-news detection, digit & clothing recognition, churn, credit risk and more. Free, no sign-up.">
+<title>AI Projects Lab — 20 Working Machine-Learning Apps</title>
+<meta name="description" content="Twenty real machine-learning projects you can use right in your browser — sentiment analysis, spam detection, fake-news detection, digit & clothing recognition, churn, credit risk, a movie recommender, CIFAR-10 image AI and more. Free, no sign-up.">
 <style>
   :root{--bg:#0b1020;--card:#131a30;--card2:#0f1528;--line:#24304f;--txt:#e8ecf6;--mut:#9aa7c7;--acc:#4f8cff;--good:#2fbf71;--bad:#ff5d5d;--warn:#ffb020}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -54,7 +54,7 @@
 <body>
 <header>
   <h1>AI Projects <span>Lab</span></h1>
-  <p>Fifteen real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, chat and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
+  <p>Twenty real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, chat, upload and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
   <a class="ghbtn" href="https://github.com/ikram6566/ai-projects-portfolio" target="_blank" rel="noopener">📂 Notebooks &amp; code on GitHub</a>
 </header>
 <main>
@@ -95,6 +95,58 @@ function linear(model, x){ let s=model.intercept; for(let i=0;i<x.length;i++) s+
 function softmax(model, x){
   const sc = model.coef.map((row,k)=> row.reduce((s,c,i)=>s+c*x[i], model.intercept[k]));
   const mx = Math.max(...sc), ex = sc.map(v=>Math.exp(v-mx)), tot = ex.reduce((a,b)=>a+b,0);
+  return ex.map(v=>v/tot);
+}
+function tfidfSoftmax(model, text){
+  const toks = (text.toLowerCase().match(/[a-z0-9_]{2,}/g) || []);
+  const counts = {};
+  for(const t of toks) counts[t]=(counts[t]||0)+1;
+  for(let i=0;i<toks.length-1;i++){ const bg=toks[i]+" "+toks[i+1]; counts[bg]=(counts[bg]||0)+1; }
+  const scores = [...model.intercept]; let norm = 0; const vals = {};
+  for(const term in counts){
+    const v = model.vocab[term]; if(!v) continue;
+    const tfidf = (1+Math.log(counts[term])) * v[0];
+    vals[term]=tfidf; norm += tfidf*tfidf;
+  }
+  norm = Math.sqrt(norm) || 1;
+  for(const term in vals){ const v = model.vocab[term]; for(let k=0;k<model.classes.length;k++) scores[k] += (vals[term]/norm) * v[1+k]; }
+  const mx = Math.max(...scores), ex = scores.map(s=>Math.exp(s-mx)), tot = ex.reduce((a,b)=>a+b,0);
+  return ex.map(v=>v/tot);
+}
+function cnnPredict(model, img){ // img: 32x32x3 nested array of 0..1 — small CNN (conv32, pool, conv64, pool, dense64, dense10)
+  const W = model.weights;
+  const C1=0, B1=864, C2=896, B2=19328, D1=19392, B1D=166848, D2=166912, B2D=167552;
+  let a = new Float32Array(30*30*32);
+  for(let h=0;h<30;h++) for(let w=0;w<30;w++) for(let o=0;o<32;o++){
+    let s = W[B1+o];
+    for(let kh=0;kh<3;kh++) for(let kw=0;kw<3;kw++) for(let c=0;c<3;c++)
+      s += img[h+kh][w+kw][c] * W[C1 + ((kh*3+kw)*3+c)*32 + o];
+    a[(h*30+w)*32+o] = Math.max(0, s);
+  }
+  let p1 = new Float32Array(15*15*32);
+  for(let h=0;h<15;h++) for(let w=0;w<15;w++) for(let c=0;c<32;c++){
+    let mx = 0;
+    for(let dh=0;dh<2;dh++) for(let dw=0;dw<2;dw++) mx = Math.max(mx, a[((2*h+dh)*30 + (2*w+dw))*32 + c]);
+    p1[(h*15+w)*32+c] = mx;
+  }
+  let b = new Float32Array(13*13*64);
+  for(let h=0;h<13;h++) for(let w=0;w<13;w++) for(let o=0;o<64;o++){
+    let s = W[B2+o];
+    for(let kh=0;kh<3;kh++) for(let kw=0;kw<3;kw++) for(let c=0;c<32;c++)
+      s += p1[((h+kh)*15 + (w+kw))*32 + c] * W[C2 + ((kh*3+kw)*32+c)*64 + o];
+    b[(h*13+w)*64+o] = Math.max(0, s);
+  }
+  let flat = new Float32Array(6*6*64);
+  for(let h=0;h<6;h++) for(let w=0;w<6;w++) for(let c=0;c<64;c++){
+    let mx = 0;
+    for(let dh=0;dh<2;dh++) for(let dw=0;dw<2;dw++) mx = Math.max(mx, b[((2*h+dh)*13 + (2*w+dw))*64 + c]);
+    flat[(h*6+w)*64+c] = mx;
+  }
+  let d = new Float32Array(64);
+  for(let o=0;o<64;o++){ let s = W[B1D+o]; for(let i=0;i<2304;i++) if(flat[i]) s += flat[i]*W[D1 + i*64 + o]; d[o] = Math.max(0, s); }
+  let sc = [];
+  for(let k=0;k<10;k++){ let s = W[B2D+k]; for(let j=0;j<64;j++) s += d[j]*W[D2 + j*10 + k]; sc.push(s); }
+  const mx = Math.max(...sc), ex = sc.map(v=>Math.exp(v-mx)), tot = ex.reduce((x,y)=>x+y,0);
   return ex.map(v=>v/tot);
 }
 function mlpPredict(model, px){
@@ -216,6 +268,36 @@ const PROJECTS = [
   panel:()=>`<div class="chatlog" id="chat_log"><div class="msg b">Hello! Ask me about services, pricing, timings, projects or contact details.</div></div>
    <div style="display:flex;gap:8px"><input id="chat_in" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendChat()">
    <button class="go" style="margin-top:0;width:auto;padding:11px 20px" onclick="sendChat()">Send</button></div>`},
+ {id:'agnews', icon:'🗞️', name:'News Topic Classifier', folder:'20-news-topic-classification',
+  desc:'Paste a news headline or story — the model sorts it into World, Sports, Business or Sci/Tech. Trained on AG News: 120,000 real articles.',
+  panel:()=>`<label>Headline / news text</label><textarea id="ag_in">The striker scored twice in the second half as the home side won the derby in front of a packed stadium.</textarea>
+   <button class="go" onclick="runAgnews()">Classify topic</button>
+   <div class="result" id="ag_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="ag_all"></div></div>`},
+ {id:'bank', icon:'💳', name:'Bank Marketing Prediction', folder:'16-bank-marketing-prediction',
+  desc:'Will this bank client subscribe to a term deposit after the campaign call? Trained on 45,211 real campaign records (UCI Bank Marketing). Yes/no features are 1/0; defaults are dataset medians.',
+  panel:()=>`<div class="row" id="bank_fields"></div>
+   <button class="go" onclick="runBank()">Predict subscription</button>
+   <div class="result" id="ba_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>
+   <div class="note">Honesty note: only ~12% of clients subscribe, so a lazy always-"no" model already scores 88.3%. This one's balance is in the README.</div>`},
+ {id:'reco', icon:'🎬', name:'Movie Recommendation System', folder:'17-movie-recommendation-system',
+  desc:'Pick a real movie fan from 413,402 ratings — a matrix-factorization (SVD) model shows what they loved and what it recommends next.',
+  panel:()=>`<label>Sample user</label><select id="reco_sel" onchange="runReco()"></select>
+   <div id="reco_out" style="margin-top:10px"></div>
+   <div class="note">Recommendations precomputed by the SVD model: held-out RMSE 1.51 vs 1.73 for the naive baseline (0–10 rating scale).</div>`},
+ {id:'stock', icon:'📈', name:'Stock Price Prediction — Honest Test', folder:'18-stock-price-prediction',
+  desc:'Can ML predict tomorrow\'s Apple share price? This demo gives the model\'s real answer — and the notebook verdict: it did NOT beat the naive baseline. An honest random-walk lesson.',
+  panel:()=>`<label>Last closing price (USD)</label><input type="number" step="any" id="stock_close">
+   <div class="row" id="stock_fields" style="margin-top:6px"></div>
+   <button class="go" onclick="runStock()">Predict tomorrow's close</button>
+   <div class="result" id="st_res"><div class="verdict"></div><div class="bar"><i style="background:var(--acc)"></i></div><div class="pct note"></div></div>
+   <div class="note">Features are recent returns and moving-average gaps (defaults = medians). Test-set MAE: model $3.07 vs naive $3.04. Not investment advice.</div>`},
+ {id:'cifar', icon:'🖼️', name:'CIFAR-10 Image Recognizer', folder:'19-cifar10-image-classification',
+  desc:'Upload any photo — a small convolutional neural network shrinks it to 32×32 and names it: airplane, car, bird, cat, deer, dog, frog, horse, ship or truck.',
+  panel:()=>`<label>Choose an image</label><input type="file" id="cifar_file" accept="image/*" onchange="loadCifar()">
+   <canvas id="cifar_cv" width="32" height="32" style="width:96px;height:96px;image-rendering:pixelated;border:1px solid var(--line);border-radius:8px;margin:10px auto;display:none"></canvas>
+   <button class="go" onclick="runCifar()">Recognize image</button>
+   <div class="result" id="ci_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="ci_top"></div></div>
+   <div class="note">The CNN sees only a tiny 32×32 version of your photo — simple, centered subjects work best.</div>`},
 ];
 
 const grid=document.getElementById('grid');
@@ -299,6 +381,59 @@ function runChurn(){
   const p = scaledLR(M.churn, x);
   showResult('ch_res', p>=0.5?'📉 Likely to CHURN — act now!':'📈 Likely to stay', p>=0.5?p:1-p, p<0.5);
 }
+function runAgnews(){
+  const p = tfidfSoftmax(M.agnews, document.getElementById('ag_in').value);
+  const order = p.map((v,i)=>[v,i]).sort((a,b)=>b[0]-a[0]);
+  showResult('ag_res','🗞️ Topic: '+M.agnews.classes[order[0][1]], order[0][0], null);
+  document.getElementById('ag_all').textContent = 'All topics: ' + order.map(([v,i])=>M.agnews.classes[i]+' '+(v*100).toFixed(1)+'%').join(' · ');
+}
+function runBank(){
+  const x = readFields('bank', M.bank.features);
+  const p = scaledLR(M.bank, x);
+  showResult('ba_res', p>=0.5?'💳 Likely to SUBSCRIBE':'🚫 Unlikely to subscribe', p>=0.5?p:1-p, p>=0.5);
+}
+function runReco(){
+  const u = M.reco.users[+document.getElementById('reco_sel').value];
+  if(!u) return;
+  const li = (t,s)=>`<div style="display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px solid var(--line);font-size:.9rem"><span>${t}</span><b style="white-space:nowrap">${s}</b></div>`;
+  document.getElementById('reco_out').innerHTML =
+    '<div style="font-weight:700;margin-bottom:2px">⭐ This user loved</div>' +
+    u.favorites.map(([t,r])=>li(t,'★ '+r+'/10')).join('') +
+    '<div style="font-weight:700;margin:10px 0 2px">🤖 Recommended next</div>' +
+    u.recommendations.map(([t,p])=>li(t,'predicted ★ '+p.toFixed(1))).join('');
+}
+function runStock(){
+  const close = num('stock_close');
+  if(!(close>0)){ alert('Enter the last closing price.'); return; }
+  const x = readFields('stock', M.stock.features);
+  const p = linear(M.stock, x);
+  const price = close*(1+p);
+  const r=document.getElementById('st_res'); r.classList.add('show');
+  r.querySelector('.verdict').textContent='📈 Predicted next close: $'+price.toFixed(2)+' ('+(p>=0?'+':'')+(p*100).toFixed(2)+'%)';
+  r.querySelector('.bar i').style.width='100%';
+  r.querySelector('.pct').textContent='Honest context: model test MAE $'+M.stock.mae.toFixed(2)+' vs naive $'+M.stock.naive_mae.toFixed(2)+' — the model did not beat "same as today". Experiment only.';
+}
+let cifarData = null;
+function loadCifar(){
+  const f = document.getElementById('cifar_file').files[0];
+  if(!f) return;
+  const img = new Image();
+  img.onload = ()=>{
+    const cv=document.getElementById('cifar_cv'), ctx=cv.getContext('2d',{willReadFrequently:true});
+    ctx.drawImage(img,0,0,32,32); cv.style.display='block';
+    cifarData = ctx.getImageData(0,0,32,32).data;
+  };
+  img.src = URL.createObjectURL(f);
+}
+function runCifar(){
+  if(!cifarData){ alert('Choose an image first 🙂'); return; }
+  const img=[];
+  for(let h=0;h<32;h++){ const row=[]; for(let w=0;w<32;w++){ const i=(h*32+w)*4; row.push([cifarData[i]/255, cifarData[i+1]/255, cifarData[i+2]/255]); } img.push(row); }
+  const probs = cnnPredict(M.cifar, img);
+  const order = probs.map((p,i)=>[p,i]).sort((a,b)=>b[0]-a[0]);
+  showResult('ci_res','🖼️ That looks like: '+M.cifar.labels[order[0][1]], order[0][0], null);
+  document.getElementById('ci_top').textContent = 'Top guesses: ' + order.slice(0,3).map(([v,i])=>M.cifar.labels[i]+' ('+(v*100).toFixed(0)+'%)').join(' · ');
+}
 function runLoan(){
   const x = readFields('loan', M.loan.features);
   const p = scaledLR(M.loan, x);
@@ -360,7 +495,7 @@ const INTENTS = [
   [/\b(prices?|pricing|costs?|charges?|rates?)\b/i, ["Pricing depends on scope. Small ML models start from a fixed mini-package; share your requirements for an exact quote."]],
   [/\b(timings?|hours|open|when)\b/i, ["We reply within 24 hours, Monday to Saturday."]],
   [/\b(contact|email|phone|reach)\b/i, ["You can reach us by email at ikramrehman300@gmail.com."]],
-  [/\b(projects?|portfolio|github|work)\b/i, ["You can explore 15 working AI projects in the portfolio, and try them all live right here in the AI Projects Lab."]],
+  [/\b(projects?|portfolio|github|work)\b/i, ["You can explore 20 working AI projects in the portfolio, and try them all live right here in the AI Projects Lab."]],
   [/\b(thank|shukria)\b/i, ["You are welcome! Anything else I can help with?"]],
   [/\b(bye|goodbye|allah hafiz)\b/i, ["Goodbye! Come back any time."]],
 ];
@@ -426,10 +561,13 @@ function start(){
   const acc={sentiment:M.sentiment.accuracy, spam:M.spam.accuracy, fakenews:M.fakenews.accuracy,
              mnist:M.mnist.accuracy, titanic:M.titanic.accuracy, house:M.house.r2,
              iris:M.iris.accuracy, wine:M.wine.accuracy, cancer:M.cancer.accuracy, heart:M.heart.accuracy,
-             diabetes:M.diabetes.accuracy, churn:M.churn.accuracy, loan:M.loan.accuracy, fashion:M.fashion.accuracy};
+             diabetes:M.diabetes.accuracy, churn:M.churn.accuracy, loan:M.loan.accuracy, fashion:M.fashion.accuracy,
+             agnews:M.agnews.accuracy, bank:M.bank.accuracy, cifar:M.cifar.accuracy};
   document.querySelectorAll('.card').forEach((card,i)=>{
     const p=PROJECTS[i], el=card.querySelector('.nb-acc');
     if(p.id==='chatbot'){ el.textContent='9/9 intent checks'; return; }
+    if(p.id==='reco'){ el.textContent='RMSE '+M.reco.rmse.toFixed(2)+' vs 1.73 baseline'; return; }
+    if(p.id==='stock'){ el.textContent='MAE $'+M.stock.mae.toFixed(2)+' vs naive $'+M.stock.naive_mae.toFixed(2); return; }
     el.textContent = (p.id==='house' ? 'R² ' : '') + (acc[p.id]*100).toFixed(1) + (p.id==='house'?'':'%');
   });
   document.getElementById('house_fields').innerHTML = fieldsHTML('house', M.house.features, M.house.defaults);
@@ -439,19 +577,30 @@ function start(){
   document.getElementById('diabetes_fields').innerHTML = fieldsHTML('diabetes', M.diabetes.features, M.diabetes.defaults);
   document.getElementById('churn_fields').innerHTML = fieldsHTML('churn', M.churn.features, M.churn.defaults);
   document.getElementById('loan_fields').innerHTML = fieldsHTML('loan', M.loan.features, M.loan.defaults);
+  document.getElementById('bank_fields').innerHTML = fieldsHTML('bank', M.bank.features, M.bank.defaults);
+  document.getElementById('stock_fields').innerHTML = fieldsHTML('stock', M.stock.features, M.stock.defaults);
+  document.getElementById('stock_close').value = M.stock.last_close;
+  document.getElementById('reco_sel').innerHTML = M.reco.users.map((u,i)=>`<option value="${i}">User #${u.id} — loved “${u.favorites[0][0]}”</option>`).join('');
+  runReco();
 }
 fetch('models.json').then(r=>{ if(!r.ok) throw 0; return r.json(); })
  .then(m=>{ M=m; start(); })
  .catch(()=>Promise.all([
   'models/m_sentiment.json','models/m_spam.json','models/m_fakenews.json','models/m_tabular.json',
   'models/m_mnist_meta.json','models/m_mnist_0.json','models/m_mnist_1.json','models/m_mnist_2.json','models/m_mnist_3.json',
-  'models/m_fashion_meta.json','models/m_fashion_0.json','models/m_fashion_1.json','models/m_fashion_2.json','models/m_fashion_3.json'
+  'models/m_fashion_meta.json','models/m_fashion_0.json','models/m_fashion_1.json','models/m_fashion_2.json','models/m_fashion_3.json',
+  'models/m_tabular2.json','models/m_agnews.json','models/m_reco.json','models/m_cifar_meta.json',
+  'models/m_cifar_0.json','models/m_cifar_1.json','models/m_cifar_2.json','models/m_cifar_3.json','models/m_cifar_4.json',
+  'models/m_cifar_5.json','models/m_cifar_6.json','models/m_cifar_7.json','models/m_cifar_8.json','models/m_cifar_9.json',
+  'models/m_cifar_10.json','models/m_cifar_11.json','models/m_cifar_12.json','models/m_cifar_13.json'
  ].map(u=>fetch(u).then(r=>r.json()))).then(parts=>{
   M = Object.assign({}, ...parts);
   M.mnist = Object.assign({}, M.mnist_meta, {W1: [...parts[5].W1part, ...parts[6].W1part, ...parts[7].W1part, ...parts[8].W1part]});
   delete M.mnist_meta;
   M.fashion = Object.assign({}, M.fashion_meta, {W1: [...parts[10].W1part, ...parts[11].W1part, ...parts[12].W1part, ...parts[13].W1part]});
   delete M.fashion_meta;
+  M.cifar = Object.assign({}, M.cifar_meta, {weights: parts.slice(18, 32).flatMap(p=>p.cifarChunk)});
+  delete M.cifar_meta;
   start();
  }).catch(()=>{ document.querySelector('header p').textContent='Loading models… if this persists, please refresh.'; }));
 </script>

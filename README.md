@@ -1,6 +1,6 @@
 # AI Projects Lab — the app
 
-A free static web app that turns the 15 machine-learning projects from
+A free static web app that turns the 20 machine-learning projects from
 [ai-projects-portfolio](https://github.com/ikram6566/ai-projects-portfolio) into
 **working tools anyone can use in the browser** — no server, no sign-up, no cost.
 
@@ -9,7 +9,10 @@ A free static web app that turns the 15 machine-learning projects from
 ## How it works
 - `export_models.py` trains a lightweight browser version of each project
   (TF-IDF + Logistic Regression for text, scaled Logistic/Linear Regression for
-  tabular data, a small 784→64→10 neural net for MNIST), evaluates each one on
+  tabular data, a small 784→64→10 neural net for MNIST); `export_batch4.py` adds
+  the Batch-4 models (TF-IDF softmax for news topics, precomputed SVD
+  recommendations, a stock-return regressor, and a CIFAR-10 CNN whose weights
+  run as a JavaScript forward pass). Each model is evaluated on
   a held-out test set, and exports the weights to `models.json`.
   The accuracy shown in the app is each browser model's *own* measured score.
 - `index.html` loads `models.json` and runs every prediction **100% client-side**
