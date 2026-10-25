@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Projects Lab — 20 Working Machine-Learning Apps</title>
-<meta name="description" content="Twenty real machine-learning projects you can use right in your browser — sentiment analysis, spam detection, fake-news detection, digit & clothing recognition, churn, credit risk, a movie recommender, CIFAR-10 image AI and more. Free, no sign-up.">
+<title>AI Projects Lab — 25 Working Machine-Learning Apps</title>
+<meta name="description" content="Twenty-five real machine-learning projects you can use right in your browser — sentiment analysis, spam & fraud detection, fake-news detection, digit, clothing & activity recognition, churn, credit risk, a movie recommender, CIFAR-10 image AI and more. Free, no sign-up.">
 <style>
   :root{--bg:#0b1020;--card:#131a30;--card2:#0f1528;--line:#24304f;--txt:#e8ecf6;--mut:#9aa7c7;--acc:#4f8cff;--good:#2fbf71;--bad:#ff5d5d;--warn:#ffb020}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -54,7 +54,7 @@
 <body>
 <header>
   <h1>AI Projects <span>Lab</span></h1>
-  <p>Twenty real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, chat, upload and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
+  <p>Twenty-five real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, chat, upload and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
   <a class="ghbtn" href="https://github.com/ikram6566/ai-projects-portfolio" target="_blank" rel="noopener">📂 Notebooks &amp; code on GitHub</a>
 </header>
 <main>
@@ -149,6 +149,7 @@ function cnnPredict(model, img){ // img: 32x32x3 nested array of 0..1 — small 
   const mx = Math.max(...sc), ex = sc.map(v=>Math.exp(v-mx)), tot = ex.reduce((x,y)=>x+y,0);
   return ex.map(v=>v/tot);
 }
+function treeWalk(node, x){ while(node.p === undefined){ node = x[node.f] <= node.t ? node.l : node.r; } return node.p; }
 function mlpPredict(model, px){
   const h = model.b1.map((b,j)=>{ let s=b; for(let i=0;i<784;i++) if(px[i]) s+=px[i]*model.W1[i][j]; return Math.max(0,s); });
   const sc = model.b2.map((b,k)=>{ let s=b; for(let j=0;j<h.length;j++) s+=h[j]*model.W2[j][k]; return s; });
@@ -298,6 +299,36 @@ const PROJECTS = [
    <button class="go" onclick="runCifar()">Recognize image</button>
    <div class="result" id="ci_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="ci_top"></div></div>
    <div class="note">The CNN sees only a tiny 32×32 version of your photo — simple, centered subjects work best.</div>`},
+ {id:'fraud', icon:'🕵️', name:'Credit Card Fraud Detection', folder:'21-credit-card-fraud-detection',
+  desc:'Score a card transaction for fraud. Trained on 284,807 real transactions where only 0.17% are fraud — so this demo is judged on catching fraud, not raw accuracy.',
+  panel:()=>`<details><summary style="cursor:pointer;color:var(--mut);font-size:.85rem">Edit all 30 transaction features (defaults are medians; V1–V28 are anonymised PCA components)</summary><div class="row3" id="fraud_fields" style="margin-top:8px"></div></details>
+   <button class="go" onclick="runFraud()">Score transaction</button>
+   <div class="result" id="fr_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>
+   <div class="note">Honest metrics: PR-AUC 0.70 and 88.6% of fraud caught — while a lazy "always legitimate" model scores 99.83% accuracy and catches nothing. Try a huge Amount with unusual V-values to see it react.</div>`},
+ {id:'adult', icon:'💼', name:'Census Income Prediction', folder:'22-census-income-prediction',
+  desc:'Does this person earn over $50K/year? The browser demo uses the 5 numeric census features; the notebook model uses all of them and scores 84.7%.',
+  panel:()=>`<div class="row" id="adult_fields"></div>
+   <button class="go" onclick="runAdult()">Predict income band</button>
+   <div class="result" id="ad_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>
+   <div class="note">1994 US Census data (UCI Adult). A learning demo — real decisions about people would need a fairness audit.</div>`},
+ {id:'har', icon:'🏃', name:'Activity Recognition (Phone Sensors)', folder:'23-human-activity-recognition',
+  desc:'Pick a real recorded sensor window from a volunteer\'s phone — the model guesses the activity: walking, stairs, sitting, standing or laying.',
+  panel:()=>`<label>Recorded sensor window (activity hidden)</label><select id="har_sel"></select>
+   <button class="go" onclick="runHar()">Recognise activity</button>
+   <div class="result" id="ha_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="ha_true"></div></div>
+   <div class="note">Trained on UCI HAR (561 sensor features) and tested on volunteers the model never saw: 95.5%.</div>`},
+ {id:'mushroom', icon:'🍄', name:'Mushroom: Edible or Poisonous?', folder:'24-mushroom-classification',
+  desc:'Describe a mushroom and a decision tree classifies it. The dataset is nearly perfectly separable — odour does most of the work. Safety note inside.',
+  panel:()=>`<div class="row" id="mush_fields"></div>
+   <button class="go" onclick="runMushroom()">Classify mushroom</button>
+   <div class="result" id="mu_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>
+   <div class="disc">⚠️ Learning demo only — NEVER eat a wild mushroom based on any model. Real identification needs an expert.</div>`},
+ {id:'bike', icon:'🚲', name:'Bike Sharing Demand', folder:'25-bike-sharing-demand',
+  desc:'How many bikes will Washington DC rent this hour? Defaults are medians — set the hour to a rush-hour value and watch demand jump.',
+  panel:()=>`<details><summary style="cursor:pointer;color:var(--mut);font-size:.85rem">Edit features (defaults are medians; hr_17 = 5pm rush hour, temp is normalised)</summary><div class="row3" id="bike_fields" style="margin-top:8px"></div></details>
+   <button class="go" onclick="runBike()">Predict rentals</button>
+   <div class="result" id="bk_res"><div class="verdict"></div><div class="bar"><i style="background:var(--acc)"></i></div><div class="pct note"></div></div>
+   <div class="note">Browser demo uses a linear model (R² 0.684); the notebook's Random Forest reaches R² 0.918. Leakage features (casual + registered counts) are deliberately excluded.</div>`},
 ];
 
 const grid=document.getElementById('grid');
@@ -434,6 +465,44 @@ function runCifar(){
   showResult('ci_res','🖼️ That looks like: '+M.cifar.labels[order[0][1]], order[0][0], null);
   document.getElementById('ci_top').textContent = 'Top guesses: ' + order.slice(0,3).map(([v,i])=>M.cifar.labels[i]+' ('+(v*100).toFixed(0)+'%)').join(' · ');
 }
+function runFraud(){
+  const x = readFields('fraud', M.fraud.features);
+  const p = scaledLR(M.fraud, x);
+  showResult('fr_res', p>=0.5?'🚨 FRAUD suspected — review this transaction':'✅ Legitimate transaction', p>=0.5?p:1-p, p<0.5);
+}
+function runAdult(){
+  const x = readFields('adult', M.adult.features);
+  const p = scaledLR(M.adult, x);
+  showResult('ad_res', p>=0.5?'💼 Likely earns over $50K':'Likely earns $50K or less', p>=0.5?p:1-p, null);
+}
+function runHar(){
+  const s = M.har.samples[+document.getElementById('har_sel').value];
+  const xs = s.x.map((v,i)=>(v - M.har.mean[i]) / M.har.scale[i]);
+  const probs = softmax(M.har, xs);
+  const k = probs.indexOf(Math.max(...probs));
+  showResult('ha_res','🏃 Activity: '+M.har.classes[k], probs[k], null);
+  document.getElementById('ha_true').textContent = 'Actually recorded: ' + s.label + (M.har.classes[k]===s.label ? ' — correct!' : ' — a miss (these pairs are genuinely hard: sitting vs standing, downstairs vs walking).');
+}
+function runMushroom(){
+  const x = M.mushroom.features.map(f => M.mushroom.defaults[f] || 0);
+  document.querySelectorAll('#mush_fields select').forEach(sel=>{
+    const attr = sel.dataset.attr;
+    M.mushroom.features.forEach((f,i)=>{ if(f.startsWith(attr + '_')) x[i] = 0; });
+    const col = attr + '_' + sel.value;
+    const i = M.mushroom.features.indexOf(col);
+    if(i >= 0) x[i] = 1;
+  });
+  const p = treeWalk(M.mushroom.tree, x);
+  showResult('mu_res', p>=0.5?'☠️ POISONOUS — do not eat':'🍄 Edible (per the field-guide data)', p>=0.5?p:1-p, p<0.5);
+}
+function runBike(){
+  const x = readFields('bike', M.bike.features);
+  const v = Math.max(0, linear(M.bike, x));
+  const r=document.getElementById('bk_res'); r.classList.add('show');
+  r.querySelector('.verdict').textContent='🚲 Predicted rentals: '+Math.round(v)+' bikes this hour';
+  r.querySelector('.bar i').style.width='100%';
+  r.querySelector('.pct').textContent='Linear browser model: R² '+M.bike.r2+', average error ±'+Math.round(M.bike.mae)+' bikes (notebook Random Forest: R² 0.918)';
+}
 function runLoan(){
   const x = readFields('loan', M.loan.features);
   const p = scaledLR(M.loan, x);
@@ -562,12 +631,15 @@ function start(){
              mnist:M.mnist.accuracy, titanic:M.titanic.accuracy, house:M.house.r2,
              iris:M.iris.accuracy, wine:M.wine.accuracy, cancer:M.cancer.accuracy, heart:M.heart.accuracy,
              diabetes:M.diabetes.accuracy, churn:M.churn.accuracy, loan:M.loan.accuracy, fashion:M.fashion.accuracy,
-             agnews:M.agnews.accuracy, bank:M.bank.accuracy, cifar:M.cifar.accuracy};
+             agnews:M.agnews.accuracy, bank:M.bank.accuracy, cifar:M.cifar.accuracy,
+             adult:M.adult.accuracy, har:M.har.accuracy, mushroom:M.mushroom.accuracy};
   document.querySelectorAll('.card').forEach((card,i)=>{
     const p=PROJECTS[i], el=card.querySelector('.nb-acc');
     if(p.id==='chatbot'){ el.textContent='9/9 intent checks'; return; }
     if(p.id==='reco'){ el.textContent='RMSE '+M.reco.rmse.toFixed(2)+' vs 1.73 baseline'; return; }
     if(p.id==='stock'){ el.textContent='MAE $'+M.stock.mae.toFixed(2)+' vs naive $'+M.stock.naive_mae.toFixed(2); return; }
+    if(p.id==='fraud'){ el.textContent='PR-AUC '+M.fraud.pr_auc.toFixed(2)+' · catches '+(M.fraud.recall*100).toFixed(1)+'% of fraud'; return; }
+    if(p.id==='bike'){ el.textContent='R² '+(M.bike.r2*1000/1000).toFixed(3)+' (notebook RF: 0.918)'; return; }
     el.textContent = (p.id==='house' ? 'R² ' : '') + (acc[p.id]*100).toFixed(1) + (p.id==='house'?'':'%');
   });
   document.getElementById('house_fields').innerHTML = fieldsHTML('house', M.house.features, M.house.defaults);
@@ -582,6 +654,24 @@ function start(){
   document.getElementById('stock_close').value = M.stock.last_close;
   document.getElementById('reco_sel').innerHTML = M.reco.users.map((u,i)=>`<option value="${i}">User #${u.id} — loved “${u.favorites[0][0]}”</option>`).join('');
   runReco();
+  document.getElementById('fraud_fields').innerHTML = fieldsHTML('fraud', M.fraud.features, M.fraud.defaults);
+  document.getElementById('adult_fields').innerHTML = fieldsHTML('adult', M.adult.features, M.adult.defaults);
+  document.getElementById('bike_fields').innerHTML = fieldsHTML('bike', M.bike.features, M.bike.defaults);
+  document.getElementById('har_sel').innerHTML = M.har.samples.map((s,i)=>`<option value="${i}">Sensor window #${i+1}</option>`).join('');
+  // mushroom: one select per attribute the decision tree actually splits on
+  const used = new Set();
+  (function walk(n){ if(n.p !== undefined) return; used.add(M.mushroom.features[n.f]); walk(n.l); walk(n.r); })(M.mushroom.tree);
+  const attrs = [...new Set([...used].map(f => f.slice(0, f.lastIndexOf('_'))))];
+  const NAMES = {'odor':'Odour','spore-print-color':'Spore print colour','gill-color':'Gill colour','bruises':'Bruises present','cap-color':'Cap colour','stalk-root':'Stalk root','gill-size':'Gill size','ring-type':'Ring type','cap-surface':'Cap surface','habitat':'Habitat','population':'Population','veil-color':'Veil colour'};
+  const ODOR = {'a':'almond','l':'anise','c':'creosote','y':'fishy','f':'foul','m':'musty','n':'none','p':'pungent','s':'spicy'};
+  const COLOR = {'k':'black','n':'brown','b':'buff','h':'chocolate','g':'gray','r':'green','o':'orange','p':'pink','u':'purple','e':'red','w':'white','y':'yellow'};
+  const labelFor = (attr, v) => attr === 'odor' ? (ODOR[v] || v) : attr === 'bruises' ? (v === 't' ? 'yes' : 'no') : attr.endsWith('color') ? (COLOR[v] || v) : v;
+  document.getElementById('mush_fields').innerHTML = attrs.map(attr=>{
+    const vals = M.mushroom.attributes[attr];
+    const def = vals.find(v => M.mushroom.defaults[attr + '_' + v] === 1) || vals.find(v => !M.mushroom.features.includes(attr + '_' + v)) || vals[0];
+    return `<div><label>${NAMES[attr] || attr}</label><select data-attr="${attr}" id="mush_${attr}">` +
+      vals.map(v=>`<option value="${v}" ${v===def?'selected':''}>${labelFor(attr, v)}</option>`).join('') + '</select></div>';
+  }).join('');
 }
 fetch('models.json').then(r=>{ if(!r.ok) throw 0; return r.json(); })
  .then(m=>{ M=m; start(); })
@@ -592,7 +682,8 @@ fetch('models.json').then(r=>{ if(!r.ok) throw 0; return r.json(); })
   'models/m_tabular2.json','models/m_agnews.json','models/m_reco.json','models/m_cifar_meta.json',
   'models/m_cifar_0.json','models/m_cifar_1.json','models/m_cifar_2.json','models/m_cifar_3.json','models/m_cifar_4.json',
   'models/m_cifar_5.json','models/m_cifar_6.json','models/m_cifar_7.json','models/m_cifar_8.json','models/m_cifar_9.json',
-  'models/m_cifar_10.json','models/m_cifar_11.json','models/m_cifar_12.json','models/m_cifar_13.json'
+  'models/m_cifar_10.json','models/m_cifar_11.json','models/m_cifar_12.json','models/m_cifar_13.json',
+  'models/m_tabular3.json','models/m_har.json','models/m_mushroom.json'
  ].map(u=>fetch(u).then(r=>r.json()))).then(parts=>{
   M = Object.assign({}, ...parts);
   M.mnist = Object.assign({}, M.mnist_meta, {W1: [...parts[5].W1part, ...parts[6].W1part, ...parts[7].W1part, ...parts[8].W1part]});
