@@ -172,3 +172,21 @@ print("mnist acc", OUT["mnist"]["accuracy"])
 with open("models.json", "w") as f:
     json.dump(OUT, f, separators=(",", ":"))
 print("models.json written")
+
+# Split into <100KB files for file-based Vercel deployments (index.html merges them)
+import os
+os.makedirs("models", exist_ok=True)
+def trunc(model, n):
+    items = sorted(model["vocab"].items(), key=lambda kv: -abs(kv[1][1]))[:n]
+    out = dict(model); out["vocab"] = dict(items); return out
+for name, n in [("sentiment", 3200), ("spam", 3000), ("fakenews", 3200)]:
+    json.dump({name: trunc(OUT[name], n)}, open(f"models/m_{name}.json", "w"), separators=(",", ":"))
+json.dump({k: OUT[k] for k in ["titanic", "house", "iris", "cancer", "wine", "heart"]},
+          open("models/m_tabular.json", "w"), separators=(",", ":"))
+W1 = OUT["mnist"]["W1"]
+for i in range(0, 784, 196):
+    json.dump({"W1part": W1[i:i+196]}, open(f"models/m_mnist_{i//196}.json", "w"), separators=(",", ":"))
+json.dump({"mnist_meta": {"b1": OUT["mnist"]["b1"], "W2": OUT["mnist"]["W2"], "b2": OUT["mnist"]["b2"],
+                          "accuracy": OUT["mnist"]["accuracy"], "type": "mlp"}},
+          open("models/m_mnist_meta.json", "w"), separators=(",", ":"))
+print("split model files written to models/")
