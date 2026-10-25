@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Projects Lab — 10 Working Machine-Learning Apps</title>
+<meta name="description" content="Ten real machine-learning projects you can use right in your browser — sentiment analysis, spam detection, fake-news detection, digit recognition and more. Free, no sign-up.">
+<style>
+  :root{--bg:#0b1020;--card:#131a30;--card2:#0f1528;--line:#24304f;--txt:#e8ecf6;--mut:#9aa7c7;--acc:#4f8cff;--good:#2fbf71;--bad:#ff5d5d;--warn:#ffb020}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--txt);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;line-height:1.55}
+  header{padding:56px 20px 30px;text-align:center;background:radial-gradient(900px 400px at 50% -80px,#1d2c52 0%,var(--bg) 60%)}
+  header h1{font-size:2.4rem;letter-spacing:-.5px}
+  header h1 span{color:var(--acc)}
+  header p{color:var(--mut);max-width:640px;margin:12px auto 0}
+  .ghbtn{display:inline-block;margin-top:20px;padding:10px 20px;border:1px solid var(--line);border-radius:999px;color:var(--txt);text-decoration:none;background:var(--card)}
+  .ghbtn:hover{border-color:var(--acc)}
+  main{max-width:1060px;margin:0 auto;padding:10px 16px 40px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:8px}
+  .card h3{font-size:1.12rem}
+  .card p{color:var(--mut);font-size:.92rem;flex:1}
+  .badges{display:flex;gap:8px;flex-wrap:wrap}
+  .badge{font-size:.72rem;padding:3px 9px;border-radius:999px;background:var(--card2);border:1px solid var(--line);color:var(--mut)}
+  .badge b{color:var(--good)}
+  .try{align-self:flex-start;margin-top:4px;background:var(--acc);color:#fff;border:0;padding:9px 18px;border-radius:9px;cursor:pointer;font-weight:600}
+  .try:hover{filter:brightness(1.12)}
+  .panel{display:none;margin-top:12px;border-top:1px dashed var(--line);padding-top:14px}
+  .panel.open{display:block}
+  label{font-size:.8rem;color:var(--mut);display:block;margin:10px 0 4px}
+  input,select,textarea{width:100%;background:var(--card2);border:1px solid var(--line);border-radius:8px;color:var(--txt);padding:9px 10px;font:inherit;font-size:.92rem}
+  textarea{min-height:74px;resize:vertical}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .go{margin-top:14px;width:100%;background:var(--good);color:#04160b;border:0;padding:11px;border-radius:9px;font-weight:700;cursor:pointer}
+  .go:hover{filter:brightness(1.1)}
+  .ghost{margin-top:8px;width:100%;background:transparent;color:var(--mut);border:1px solid var(--line);padding:8px;border-radius:9px;cursor:pointer}
+  .result{margin-top:14px;padding:12px 14px;border-radius:10px;background:var(--card2);border:1px solid var(--line);display:none}
+  .result.show{display:block}
+  .result .verdict{font-size:1.15rem;font-weight:700}
+  .bar{height:9px;border-radius:99px;background:#1c2745;margin-top:8px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .4s}
+  .note{font-size:.78rem;color:var(--mut);margin-top:8px}
+  canvas#digit{background:#000;border:1px solid var(--line);border-radius:10px;touch-action:none;width:100%;max-width:280px;display:block;margin:0 auto}
+  footer{text-align:center;color:var(--mut);padding:26px 16px 44px;font-size:.88rem}
+  footer a{color:var(--acc);text-decoration:none}
+  .disc{font-size:.75rem;color:var(--warn);margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <h1>AI Projects <span>Lab</span></h1>
+  <p>Ten real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, slide and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
+  <a class="ghbtn" href="https://github.com/ikram6566/ai-projects-portfolio" target="_blank" rel="noopener">📂 Notebooks &amp; code on GitHub</a>
+</header>
+<main>
+  <div class="grid" id="grid"></div>
+</main>
+<footer>
+  Built by <b>Ikram ur Rehman</b> · Browser demos use compact versions of the full notebook models (same training data, same approach) ·
+  Full code, data sources and honest evaluations: <a href="https://github.com/ikram6566/ai-projects-portfolio" target="_blank" rel="noopener">github.com/ikram6566/ai-projects-portfolio</a>
+</footer>
+
+<script>
+const GH = "https://github.com/ikram6566/ai-projects-portfolio/tree/main/";
+let M = null; // models.json
+
+/* ---------------- model engines ---------------- */
+const sigmoid = z => 1/(1+Math.exp(-z));
+function tfidfPredict(model, text){
+  const toks = (text.toLowerCase().match(/[a-z0-9_]{2,}/g) || []);
+  const counts = {};
+  for(const t of toks) counts[t]=(counts[t]||0)+1;
+  for(let i=0;i<toks.length-1;i++){ const bg=toks[i]+" "+toks[i+1]; counts[bg]=(counts[bg]||0)+1; }
+  let score = model.intercept, norm = 0; const vals = {};
+  for(const term in counts){
+    const v = model.vocab[term]; if(!v) continue;
+    const tfidf = (1+Math.log(counts[term])) * v[0];
+    vals[term]=tfidf; norm += tfidf*tfidf;
+  }
+  norm = Math.sqrt(norm) || 1;
+  for(const term in vals) score += (vals[term]/norm) * model.vocab[term][1];
+  return sigmoid(score); // probability of the POSITIVE class
+}
+function scaledLR(model, x){
+  let s = model.intercept;
+  for(let i=0;i<x.length;i++) s += ((x[i]-model.mean[i])/model.scale[i]) * model.coef[i];
+  return sigmoid(s);
+}
+function linear(model, x){ let s=model.intercept; for(let i=0;i<x.length;i++) s+=x[i]*model.coef[i]; return s; }
+function softmax(model, x){
+  const sc = model.coef.map((row,k)=> row.reduce((s,c,i)=>s+c*x[i], model.intercept[k]));
+  const mx = Math.max(...sc), ex = sc.map(v=>Math.exp(v-mx)), tot = ex.reduce((a,b)=>a+b,0);
+  return ex.map(v=>v/tot);
+}
+function mlpPredict(model, px){
+  const h = model.b1.map((b,j)=>{ let s=b; for(let i=0;i<784;i++) if(px[i]) s+=px[i]*model.W1[i][j]; return Math.max(0,s); });
+  const sc = model.b2.map((b,k)=>{ let s=b; for(let j=0;j<h.length;j++) s+=h[j]*model.W2[j][k]; return s; });
+  const mx=Math.max(...sc), ex=sc.map(v=>Math.exp(v-mx)), tot=ex.reduce((a,b)=>a+b,0);
+  return ex.map(v=>v/tot);
+}
+
+/* ---------------- UI helpers ---------------- */
+function showResult(id, verdict, prob, good){
+  const r=document.getElementById(id); r.classList.add('show');
+  r.querySelector('.verdict').textContent=verdict;
+  r.querySelector('.verdict').style.color = good===null?'var(--txt)':(good?'var(--good)':'var(--bad)');
+  const bar=r.querySelector('.bar i'); bar.style.width=(prob*100).toFixed(1)+'%';
+  bar.style.background = good===null?'var(--acc)':(good?'var(--good)':'var(--bad)');
+  r.querySelector('.pct').textContent=(prob*100).toFixed(1)+'% confidence';
+}
+function num(id){ return parseFloat(document.getElementById(id).value)||0; }
+function fieldsHTML(prefix, features, defaults){
+  return features.map(f=>`<div><label>${f}</label><input type="number" step="any" id="${prefix}_${f.replace(/[^a-z0-9]/gi,'_')}" value="${defaults[f]??''}"></div>`).join('');
+}
+function readFields(prefix, features){ return features.map(f=> num(`${prefix}_${f.replace(/[^a-z0-9]/gi,'_')}`)); }
+function setFields(prefix, obj){ for(const k in obj){ const el=document.getElementById(`${prefix}_${k.replace(/[^a-z0-9]/gi,'_')}`); if(el) el.value=obj[k]; } }
+
+/* ---------------- project cards ---------------- */
+const PROJECTS = [
+ {id:'sentiment', icon:'🎬', name:'Sentiment Analysis', folder:'03-sentiment-analysis',
+  desc:'Paste any movie review — the model reads it and decides: positive or negative. Trained on the IMDb dataset of 50,000 full reviews.',
+  panel:()=>`<label>Movie review text</label><textarea id="sent_in">An absolute masterpiece — brilliant acting and a story I will never forget!</textarea>
+   <button class="go" onclick="runSentiment()">Analyse sentiment</button>
+   <div class="result" id="sent_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>`},
+ {id:'spam', icon:'📩', name:'SMS Spam Detection', folder:'07-sms-spam-detection',
+  desc:'Type any text message and find out if it looks like spam. Trained on 5,574 real SMS messages (UCI Spam Collection).',
+  panel:()=>`<label>Text message</label><textarea id="spam_in">Congratulations! You have won a FREE ticket. Call now to claim your prize!</textarea>
+   <button class="go" onclick="runSpam()">Check message</button>
+   <div class="result" id="spam_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>`},
+ {id:'fakenews', icon:'📰', name:'Fake News Detection', folder:'04-fake-news-detection',
+  desc:'Paste a news headline and article text — the model flags whether it reads like real wire news or fake news. Trained on 32,470 full articles.',
+  panel:()=>`<label>Headline</label><input id="fn_title" value="City council approves new library funding">
+   <label>Article text</label><textarea id="fn_in">The city council voted on Tuesday to approve funding for a new public library, officials said, in a move welcomed by local residents and educators.</textarea>
+   <button class="go" onclick="runFakeNews()">Check article</button>
+   <div class="result" id="fn_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div>
+   <div class="note">⚠️ Wording is not proof — this flags writing style only. Always verify claims with trusted sources.</div></div>`},
+ {id:'mnist', icon:'✏️', name:'Handwritten Digit Recognition', folder:'05-mnist-digit-recognition',
+  desc:'Draw a digit (0–9) with your mouse or finger and a neural network reads it. Trained on the MNIST dataset of 70,000 handwritten digits.',
+  panel:()=>`<canvas id="digit" width="280" height="280"></canvas>
+   <div class="row"><button class="ghost" onclick="clearDigit()">Clear</button><button class="go" style="margin-top:8px" onclick="runDigit()">Read my digit</button></div>
+   <div class="result" id="dg_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="dg_top"></div></div>`},
+ {id:'titanic', icon:'🚢', name:'Titanic Survival Prediction', folder:'01-titanic-survival',
+  desc:'Step aboard the Titanic: enter a passenger\'s details and the model estimates their chance of survival, from the real 891-passenger manifest.',
+  panel:()=>`<div class="row">
+     <div><label>Ticket class</label><select id="ti_class"><option value="1">1st class</option><option value="2">2nd class</option><option value="3" selected>3rd class</option></select></div>
+     <div><label>Sex</label><select id="ti_sex"><option value="1">Female</option><option value="0">Male</option></select></div>
+     <div><label>Age</label><input type="number" id="ti_age" value="25"></div>
+     <div><label>Fare ($)</label><input type="number" id="ti_fare" value="15"></div>
+     <div><label>Siblings / spouse aboard</label><input type="number" id="ti_sib" value="0"></div>
+     <div><label>Parents / children aboard</label><input type="number" id="ti_par" value="0"></div>
+     <div><label>Embarked at</label><select id="ti_emb"><option value="S" selected>Southampton</option><option value="C">Cherbourg</option><option value="Q">Queenstown</option></select></div>
+   </div>
+   <button class="go" onclick="runTitanic()">Predict survival</button>
+   <div class="result" id="ti_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>`},
+ {id:'house', icon:'🏠', name:'House Price Prediction', folder:'02-house-price-prediction',
+  desc:'Estimate a California house price from neighbourhood data. Trained on 20,640 real housing records. Values are area medians — start from the defaults and play.',
+  panel:()=>`<div class="row" id="house_fields"></div>
+   <button class="go" onclick="runHouse()">Estimate price</button>
+   <div class="result" id="ho_res"><div class="verdict"></div><div class="bar"><i style="background:var(--acc)"></i></div><div class="pct note"></div></div>`},
+ {id:'iris', icon:'🌸', name:'Iris Flower Classification', folder:'06-iris-classification',
+  desc:'The classic first ML project: four flower measurements in, one of three iris species out.',
+  panel:()=>`<div class="row">
+     <div><label>Sepal length (cm)</label><input type="number" step="0.1" id="ir_0" value="5.1"></div>
+     <div><label>Sepal width (cm)</label><input type="number" step="0.1" id="ir_1" value="3.5"></div>
+     <div><label>Petal length (cm)</label><input type="number" step="0.1" id="ir_2" value="1.4"></div>
+     <div><label>Petal width (cm)</label><input type="number" step="0.1" id="ir_3" value="0.2"></div></div>
+   <button class="go" onclick="runIris()">Classify flower</button>
+   <div class="result" id="ir_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>`},
+ {id:'wine', icon:'🍷', name:'Wine Quality Prediction', folder:'09-wine-quality-prediction',
+  desc:'From a wine\'s chemistry (alcohol, acidity, sulphates…) the model predicts whether experts rated it good (≥7/10). Defaults are the dataset medians.',
+  panel:()=>`<div class="row" id="wine_fields"></div>
+   <button class="go" onclick="runWine()">Rate this wine</button>
+   <div class="result" id="wi_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>`},
+ {id:'cancer', icon:'🔬', name:'Breast Cancer Classification', folder:'08-breast-cancer-classification',
+  desc:'Classifies a tumour sample as benign or malignant from 30 cell measurements. Load a real sample case and see the model decide.',
+  panel:()=>`<div class="row"><button class="ghost" onclick="loadCancer('benign')">Load a benign sample</button><button class="ghost" onclick="loadCancer('malignant')">Load a malignant sample</button></div>
+   <details style="margin-top:10px"><summary style="cursor:pointer;color:var(--mut);font-size:.85rem">Edit all 30 measurements</summary><div class="row3" id="cancer_fields" style="margin-top:8px"></div></details>
+   <button class="go" onclick="runCancer()">Classify sample</button>
+   <div class="result" id="ca_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>
+   <div class="disc">Educational demo only — not a medical tool, never use it for real diagnosis.</div>`},
+ {id:'heart', icon:'❤️', name:'Heart Disease Prediction', folder:'10-heart-disease-prediction',
+  desc:'From 13 clinical measurements, the model estimates whether heart-disease signs are present (UCI Cleveland data, 303 patients). Defaults are typical values.',
+  panel:()=>`<div class="row" id="heart_fields"></div>
+   <button class="go" onclick="runHeart()">Check indicators</button>
+   <div class="result" id="he_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>
+   <div class="disc">Educational demo only — not a medical tool, never use it for real diagnosis.</div>`},
+];
+
+const grid=document.getElementById('grid');
+grid.innerHTML = PROJECTS.map(p=>`
+ <div class="card">
+   <h3>${p.icon} ${p.name}</h3>
+   <p>${p.desc}</p>
+   <div class="badges"><span class="badge">Notebook: <b class="nb-acc">…</b></span><span class="badge">Runs 100% in your browser</span></div>
+   <button class="try" onclick="togglePanel('${p.id}',this)">▶ Try it live</button>
+   <a href="${GH}${p.folder}" target="_blank" rel="noopener" style="color:var(--acc);font-size:.82rem;text-decoration:none">View notebook &amp; code →</a>
+   <div class="panel" id="panel_${p.id}">${p.panel()}</div>
+ </div>`).join('');
+
+function togglePanel(id, btn){
+  const el=document.getElementById('panel_'+id);
+  const open=el.classList.toggle('open');
+  btn.textContent = open ? '▼ Close' : '▶ Try it live';
+  if(id==='mnist' && open) initDigit();
+}
+
+/* ---------------- runners ---------------- */
+function runSentiment(){
+  const p = tfidfPredict(M.sentiment, document.getElementById('sent_in').value);
+  const pos = p>=0.5;
+  showResult('sent_res', pos?'😊 Positive review':'😞 Negative review', pos?p:1-p, pos);
+}
+function runSpam(){
+  const p = tfidfPredict(M.spam, document.getElementById('spam_in').value);
+  const spam = p>=0.5;
+  showResult('spam_res', spam?'🚨 SPAM':'✅ Ham (legitimate)', spam?p:1-p, !spam);
+}
+function runFakeNews(){
+  const text = document.getElementById('fn_title').value + ' ' + document.getElementById('fn_in').value;
+  const p = tfidfPredict(M.fakenews, text);
+  const real = p>=0.5;
+  showResult('fn_res', real?'🟢 Reads like REAL news':'🔴 Reads like FAKE news', real?p:1-p, real);
+}
+function runTitanic(){
+  const emb=document.getElementById('ti_emb').value;
+  const x=[ num('ti_class'), parseInt(document.getElementById('ti_sex').value), num('ti_age'), num('ti_sib'), num('ti_par'), num('ti_fare'), emb==='Q'?1:0, emb==='S'?1:0 ];
+  const p = scaledLR(M.titanic, x);
+  showResult('ti_res', p>=0.5?'🛟 Likely SURVIVED':'🌊 Likely did not survive', p>=0.5?p:1-p, p>=0.5);
+}
+function runHouse(){
+  const x = readFields('house', M.house.features);
+  const v = Math.max(15000, linear(M.house, x));
+  const r=document.getElementById('ho_res'); r.classList.add('show');
+  r.querySelector('.verdict').textContent='💵 Estimated price: $'+Math.round(v).toLocaleString();
+  r.querySelector('.bar i').style.width='100%';
+  r.querySelector('.pct').textContent='Browser model R² = '+M.house.r2+' on held-out data (notebook Random Forest: R² 0.809)';
+}
+function runIris(){
+  const x=[num('ir_0'),num('ir_1'),num('ir_2'),num('ir_3')];
+  const probs=softmax(M.iris,x); const k=probs.indexOf(Math.max(...probs));
+  showResult('ir_res','🌸 Iris '+M.iris.classes[k], probs[k], null);
+}
+function runWine(){
+  const x = readFields('wine', M.wine.features);
+  const p = scaledLR(M.wine, x);
+  showResult('wi_res', p>=0.5?'🍷 GOOD wine (experts ≥7)':'😐 Not rated good', p>=0.5?p:1-p, p>=0.5);
+}
+function loadCancer(kind){ setFields('cancer', M.cancer.samples[kind]); }
+function runCancer(){
+  const x = readFields('cancer', M.cancer.features);
+  const p = scaledLR(M.cancer, x); // pos class = Benign
+  showResult('ca_res', p>=0.5?'🟢 Benign':'🔴 Malignant', p>=0.5?p:1-p, p>=0.5);
+}
+function runHeart(){
+  const x = readFields('heart', M.heart.features);
+  const p = scaledLR(M.heart, x);
+  showResult('he_res', p>=0.5?'🔴 Disease signs present':'🟢 No disease signs', p>=0.5?p:1-p, p<0.5);
+}
+
+/* ---------------- MNIST canvas ---------------- */
+let digitInit=false;
+function initDigit(){
+  if(digitInit) return; digitInit=true;
+  const cv=document.getElementById('digit'), ctx=cv.getContext('2d');
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,280,280);
+  ctx.strokeStyle='#fff'; ctx.lineWidth=16; ctx.lineCap='round'; ctx.lineJoin='round';
+  let drawing=false, last=null;
+  const pos=e=>{ const r=cv.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:(t.clientX-r.left)*280/r.width, y:(t.clientY-r.top)*280/r.height}; };
+  const start=e=>{ drawing=true; last=pos(e); e.preventDefault(); };
+  const move=e=>{ if(!drawing) return; const p=pos(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; e.preventDefault(); };
+  const end=()=>drawing=false;
+  cv.addEventListener('mousedown',start); cv.addEventListener('mousemove',move); window.addEventListener('mouseup',end);
+  cv.addEventListener('touchstart',start,{passive:false}); cv.addEventListener('touchmove',move,{passive:false}); cv.addEventListener('touchend',end);
+}
+function clearDigit(){
+  const cv=document.getElementById('digit'), ctx=cv.getContext('2d');
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,280,280);
+  document.getElementById('dg_res').classList.remove('show');
+}
+function runDigit(){
+  const cv=document.getElementById('digit'), ctx=cv.getContext('2d');
+  const img=ctx.getImageData(0,0,280,280).data;
+  const g=[]; let minx=280,miny=280,maxx=-1,maxy=-1;
+  for(let y=0;y<280;y++) for(let x=0;x<280;x++){ const v=img[(y*280+x)*4]/255; g.push(v); if(v>0.35){ if(x<minx)minx=x; if(x>maxx)maxx=x; if(y<miny)miny=y; if(y>maxy)maxy=y; } }
+  if(maxx<0){ alert('Draw a digit first 🙂'); return; }
+  const bw=maxx-minx+1, bh=maxy-miny+1, scale=20/Math.max(bw,bh);
+  const off=document.createElement('canvas'); off.width=28; off.height=28;
+  const octx=off.getContext('2d'); octx.fillStyle='#000'; octx.fillRect(0,0,28,28);
+  const tmp=document.createElement('canvas'); tmp.width=280; tmp.height=280; tmp.getContext('2d').drawImage(cv,0,0);
+  octx.imageSmoothingEnabled=true;
+  octx.drawImage(tmp, minx, miny, bw, bh, (28-bw*scale)/2, (28-bh*scale)/2, bw*scale, bh*scale);
+  const small=octx.getImageData(0,0,28,28).data, px=[];
+  for(let i=0;i<784;i++) px.push(small[i*4]/255);
+  const probs=mlpPredict(M.mnist, px);
+  const order=probs.map((p,i)=>[p,i]).sort((a,b)=>b[0]-a[0]);
+  const r=document.getElementById('dg_res'); r.classList.add('show');
+  r.querySelector('.verdict').textContent='🔢 You drew: '+order[0][1];
+  r.querySelector('.bar i').style.width=(order[0][0]*100).toFixed(1)+'%';
+  r.querySelector('.pct').textContent=(order[0][0]*100).toFixed(1)+'% confidence';
+  document.getElementById('dg_top').textContent='Top guesses: '+order.slice(0,3).map(o=>o[1]+' ('+(o[0]*100).toFixed(0)+'%)').join(' · ');
+}
+
+/* ---------------- boot ---------------- */
+fetch('models.json').then(r=>r.json()).then(models=>{
+  M=models;
+  const acc={sentiment:M.sentiment.accuracy, spam:M.spam.accuracy, fakenews:M.fakenews.accuracy,
+             mnist:M.mnist.accuracy, titanic:M.titanic.accuracy, house:M.house.r2,
+             iris:M.iris.accuracy, wine:M.wine.accuracy, cancer:M.cancer.accuracy, heart:M.heart.accuracy};
+  document.querySelectorAll('.card').forEach((card,i)=>{
+    const p=PROJECTS[i], el=card.querySelector('.nb-acc');
+    el.textContent = (p.id==='house' ? 'R² ' : '') + (acc[p.id]*100).toFixed(1) + (p.id==='house'?'':'%');
+  });
+  document.getElementById('house_fields').innerHTML = fieldsHTML('house', M.house.features, M.house.defaults);
+  document.getElementById('wine_fields').innerHTML = fieldsHTML('wine', M.wine.features, M.wine.defaults);
+  document.getElementById('heart_fields').innerHTML = fieldsHTML('heart', M.heart.features, M.heart.defaults);
+  document.getElementById('cancer_fields').innerHTML = fieldsHTML('cancer', M.cancer.features, M.cancer.defaults);
+}).catch(()=>{ document.querySelector('header p').textContent='Loading models… if this persists, please refresh.'; });
+</script>
+</body>
+</html>
