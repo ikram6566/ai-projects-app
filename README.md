@@ -1,6 +1,6 @@
 # AI Projects Lab — the app
 
-A free static web app that turns the 10 machine-learning projects from
+A free static web app that turns the 15 machine-learning projects from
 [ai-projects-portfolio](https://github.com/ikram6566/ai-projects-portfolio) into
 **working tools anyone can use in the browser** — no server, no sign-up, no cost.
 

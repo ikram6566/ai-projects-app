@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Projects Lab — 10 Working Machine-Learning Apps</title>
-<meta name="description" content="Ten real machine-learning projects you can use right in your browser — sentiment analysis, spam detection, fake-news detection, digit recognition and more. Free, no sign-up.">
+<title>AI Projects Lab — 15 Working Machine-Learning Apps</title>
+<meta name="description" content="Fifteen real machine-learning projects you can use right in your browser — sentiment analysis, spam detection, fake-news detection, digit & clothing recognition, churn, credit risk and more. Free, no sign-up.">
 <style>
   :root{--bg:#0b1020;--card:#131a30;--card2:#0f1528;--line:#24304f;--txt:#e8ecf6;--mut:#9aa7c7;--acc:#4f8cff;--good:#2fbf71;--bad:#ff5d5d;--warn:#ffb020}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -41,7 +41,11 @@
   .bar{height:9px;border-radius:99px;background:#1c2745;margin-top:8px;overflow:hidden}
   .bar i{display:block;height:100%;background:var(--acc);width:0;transition:width .4s}
   .note{font-size:.78rem;color:var(--mut);margin-top:8px}
-  canvas#digit{background:#000;border:1px solid var(--line);border-radius:10px;touch-action:none;width:100%;max-width:280px;display:block;margin:0 auto}
+  canvas#digit,canvas#fashion{background:#000;border:1px solid var(--line);border-radius:10px;touch-action:none;width:100%;max-width:280px;display:block;margin:0 auto}
+  .chatlog{max-height:230px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:8px}
+  .msg{padding:8px 11px;border-radius:10px;font-size:.9rem;max-width:88%}
+  .msg.u{align-self:flex-end;background:var(--acc);color:#fff}
+  .msg.b{align-self:flex-start;background:var(--card2);border:1px solid var(--line)}
   footer{text-align:center;color:var(--mut);padding:26px 16px 44px;font-size:.88rem}
   footer a{color:var(--acc);text-decoration:none}
   .disc{font-size:.75rem;color:var(--warn);margin-top:8px}
@@ -50,7 +54,7 @@
 <body>
 <header>
   <h1>AI Projects <span>Lab</span></h1>
-  <p>Ten real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, slide and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
+  <p>Fifteen real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, chat and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
   <a class="ghbtn" href="https://github.com/ikram6566/ai-projects-portfolio" target="_blank" rel="noopener">📂 Notebooks &amp; code on GitHub</a>
 </header>
 <main>
@@ -185,6 +189,33 @@ const PROJECTS = [
    <button class="go" onclick="runHeart()">Check indicators</button>
    <div class="result" id="he_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>
    <div class="disc">Educational demo only — not a medical tool, never use it for real diagnosis.</div>`},
+ {id:'diabetes', icon:'🩸', name:'Diabetes Prediction', folder:'11-diabetes-prediction',
+  desc:'From 8 clinical measurements (glucose, BMI, age, blood pressure…) the model estimates diabetes risk. Trained on the Pima dataset of 768 patients. Defaults are dataset medians.',
+  panel:()=>`<div class="row" id="diabetes_fields"></div>
+   <button class="go" onclick="runDiabetes()">Estimate risk</button>
+   <div class="result" id="di_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>
+   <div class="disc">Educational demo only — not a medical tool, never use it for real diagnosis.</div>`},
+ {id:'churn', icon:'📉', name:'Customer Churn Prediction', folder:'12-customer-churn-prediction',
+  desc:'Will this telecom customer cancel? The model weighs tenure, charges, contract type and more. Trained on IBM\'s Telco dataset of 7,032 customers. Switches are 1 = yes, 0 = no; defaults are typical values.',
+  panel:()=>`<div class="row" id="churn_fields"></div>
+   <button class="go" onclick="runChurn()">Predict churn</button>
+   <div class="result" id="ch_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>`},
+ {id:'fashion', icon:'👕', name:'Fashion-MNIST Clothing Recognition', folder:'13-fashion-mnist-classification',
+  desc:'Draw a clothing item — a shoe, a shirt, a bag — and a neural network names it. Trained on Fashion-MNIST: 70,000 clothing images in 10 classes.',
+  panel:()=>`<canvas id="fashion" width="280" height="280"></canvas>
+   <div class="row"><button class="ghost" onclick="clearFashion()">Clear</button><button class="go" style="margin-top:8px" onclick="runFashion()">Recognise it</button></div>
+   <div class="result" id="fm_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="fm_top"></div></div>`},
+ {id:'loan', icon:'🏦', name:'Loan Credit-Risk Prediction', folder:'14-loan-credit-risk',
+  desc:'Good or bad credit risk? This demo uses the 7 numeric features of the classic German Credit dataset (1,000 applicants); the full notebook model uses all 20 features. Defaults are medians.',
+  panel:()=>`<div class="row" id="loan_fields"></div>
+   <button class="go" onclick="runLoan()">Score this applicant</button>
+   <div class="result" id="lo_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>
+   <div class="note">Features: duration (months), amount (DM), installment rate, residence (years), age, existing credits, dependents.</div>`},
+ {id:'chatbot', icon:'🤖', name:'Rule-Based Chatbot', folder:'15-rule-based-chatbot',
+  desc:'Chat with a transparent FAQ bot — no AI model, just regex intent rules you can inspect in the notebook. Ask about services, pricing, timings, projects or contact details.',
+  panel:()=>`<div class="chatlog" id="chat_log"><div class="msg b">Hello! Ask me about services, pricing, timings, projects or contact details.</div></div>
+   <div style="display:flex;gap:8px"><input id="chat_in" placeholder="Type a message…" onkeydown="if(event.key==='Enter')sendChat()">
+   <button class="go" style="margin-top:0;width:auto;padding:11px 20px" onclick="sendChat()">Send</button></div>`},
 ];
 
 const grid=document.getElementById('grid');
@@ -203,6 +234,7 @@ function togglePanel(id, btn){
   const open=el.classList.toggle('open');
   btn.textContent = open ? '▼ Close' : '▶ Try it live';
   if(id==='mnist' && open) initDigit();
+  if(id==='fashion' && open) initFashion();
 }
 
 /* ---------------- runners ---------------- */
@@ -257,6 +289,93 @@ function runHeart(){
   const p = scaledLR(M.heart, x);
   showResult('he_res', p>=0.5?'🔴 Disease signs present':'🟢 No disease signs', p>=0.5?p:1-p, p<0.5);
 }
+function runDiabetes(){
+  const x = readFields('diabetes', M.diabetes.features);
+  const p = scaledLR(M.diabetes, x);
+  showResult('di_res', p>=0.5?'🔴 Higher diabetes risk':'🟢 Lower diabetes risk', p>=0.5?p:1-p, p<0.5);
+}
+function runChurn(){
+  const x = readFields('churn', M.churn.features);
+  const p = scaledLR(M.churn, x);
+  showResult('ch_res', p>=0.5?'📉 Likely to CHURN — act now!':'📈 Likely to stay', p>=0.5?p:1-p, p<0.5);
+}
+function runLoan(){
+  const x = readFields('loan', M.loan.features);
+  const p = scaledLR(M.loan, x);
+  showResult('lo_res', p>=0.5?'✅ Good credit risk':'⚠️ Bad credit risk', p>=0.5?p:1-p, p>=0.5);
+}
+
+/* ---------------- Fashion canvas ---------------- */
+let fashionInit=false;
+function initFashion(){
+  if(fashionInit) return; fashionInit=true;
+  const cv=document.getElementById('fashion'), ctx=cv.getContext('2d');
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,280,280);
+  ctx.strokeStyle='#fff'; ctx.lineWidth=16; ctx.lineCap='round'; ctx.lineJoin='round';
+  let drawing=false, last=null;
+  const pos=e=>{ const r=cv.getBoundingClientRect(); const t=e.touches?e.touches[0]:e; return {x:(t.clientX-r.left)*280/r.width, y:(t.clientY-r.top)*280/r.height}; };
+  const start=e=>{ drawing=true; last=pos(e); e.preventDefault(); };
+  const move=e=>{ if(!drawing) return; const p=pos(e); ctx.beginPath(); ctx.moveTo(last.x,last.y); ctx.lineTo(p.x,p.y); ctx.stroke(); last=p; e.preventDefault(); };
+  const end=()=>drawing=false;
+  cv.addEventListener('mousedown',start); cv.addEventListener('mousemove',move); window.addEventListener('mouseup',end);
+  cv.addEventListener('touchstart',start,{passive:false}); cv.addEventListener('touchmove',move,{passive:false}); cv.addEventListener('touchend',end);
+}
+function clearFashion(){
+  const cv=document.getElementById('fashion'), ctx=cv.getContext('2d');
+  ctx.fillStyle='#000'; ctx.fillRect(0,0,280,280);
+  document.getElementById('fm_res').classList.remove('show');
+}
+function canvasPixels(cv){
+  const ctx=cv.getContext('2d');
+  const img=ctx.getImageData(0,0,280,280).data;
+  let minx=280,miny=280,maxx=-1,maxy=-1;
+  for(let y=0;y<280;y++) for(let x=0;x<280;x++){ const v=img[(y*280+x)*4]/255; if(v>0.35){ if(x<minx)minx=x; if(x>maxx)maxx=x; if(y<miny)miny=y; if(y>maxy)maxy=y; } }
+  if(maxx<0) return null;
+  const bw=maxx-minx+1, bh=maxy-miny+1, scale=20/Math.max(bw,bh);
+  const off=document.createElement('canvas'); off.width=28; off.height=28;
+  const octx=off.getContext('2d'); octx.fillStyle='#000'; octx.fillRect(0,0,28,28);
+  const tmp=document.createElement('canvas'); tmp.width=280; tmp.height=280; tmp.getContext('2d').drawImage(cv,0,0);
+  octx.imageSmoothingEnabled=true;
+  octx.drawImage(tmp, minx, miny, bw, bh, (28-bw*scale)/2, (28-bh*scale)/2, bw*scale, bh*scale);
+  const small=octx.getImageData(0,0,28,28).data, px=[];
+  for(let i=0;i<784;i++) px.push(small[i*4]/255);
+  return px;
+}
+function runFashion(){
+  const px=canvasPixels(document.getElementById('fashion'));
+  if(!px){ alert('Draw a clothing item first 🙂'); return; }
+  const probs=mlpPredict(M.fashion, px);
+  const order=probs.map((p,i)=>[p,i]).sort((a,b)=>b[0]-a[0]);
+  const r=document.getElementById('fm_res'); r.classList.add('show');
+  r.querySelector('.verdict').textContent='👕 That looks like: '+M.fashion.labels[order[0][1]];
+  r.querySelector('.bar i').style.width=(order[0][0]*100).toFixed(1)+'%';
+  r.querySelector('.pct').textContent=(order[0][0]*100).toFixed(1)+'% confidence';
+  document.getElementById('fm_top').textContent='Top guesses: '+order.slice(0,3).map(o=>M.fashion.labels[o[1]]+' ('+(o[0]*100).toFixed(0)+'%)').join(' · ');
+}
+
+/* ---------------- Rule-based chatbot ---------------- */
+const INTENTS = [
+  [/\b(hi|hello|hey|salam|aoa)\b/i, ["Hello! How can I help you today?", "Hi there! Ask me about services, prices or timings."]],
+  [/\b(services?|offers?|do you do|provide)\b/i, ["We offer AI/ML projects, data analysis, dashboards and automation. Tell me what you need built."]],
+  [/\b(prices?|pricing|costs?|charges?|rates?)\b/i, ["Pricing depends on scope. Small ML models start from a fixed mini-package; share your requirements for an exact quote."]],
+  [/\b(timings?|hours|open|when)\b/i, ["We reply within 24 hours, Monday to Saturday."]],
+  [/\b(contact|email|phone|reach)\b/i, ["You can reach us by email at ikramrehman300@gmail.com."]],
+  [/\b(projects?|portfolio|github|work)\b/i, ["You can explore 15 working AI projects in the portfolio, and try them all live right here in the AI Projects Lab."]],
+  [/\b(thank|shukria)\b/i, ["You are welcome! Anything else I can help with?"]],
+  [/\b(bye|goodbye|allah hafiz)\b/i, ["Goodbye! Come back any time."]],
+];
+const FALLBACKS = ["I am a simple rule-based bot, so I did not catch that. Try asking about services, pricing, timings or projects.",
+                   "Hmm, that is outside my rules. Ask me about services, prices or contact details."];
+function sendChat(){
+  const inp=document.getElementById('chat_in'), log=document.getElementById('chat_log');
+  const text=inp.value.trim(); if(!text) return; inp.value='';
+  const u=document.createElement('div'); u.className='msg u'; u.textContent=text; log.appendChild(u);
+  let reply=null;
+  for(const [pat, answers] of INTENTS){ if(pat.test(text)){ reply=answers[Math.floor(Math.random()*answers.length)]; break; } }
+  if(!reply) reply=FALLBACKS[Math.floor(Math.random()*FALLBACKS.length)];
+  const b=document.createElement('div'); b.className='msg b'; b.textContent=reply; log.appendChild(b);
+  log.scrollTop=log.scrollHeight;
+}
 
 /* ---------------- MNIST canvas ---------------- */
 let digitInit=false;
@@ -306,25 +425,33 @@ function start(){
   const models = M;
   const acc={sentiment:M.sentiment.accuracy, spam:M.spam.accuracy, fakenews:M.fakenews.accuracy,
              mnist:M.mnist.accuracy, titanic:M.titanic.accuracy, house:M.house.r2,
-             iris:M.iris.accuracy, wine:M.wine.accuracy, cancer:M.cancer.accuracy, heart:M.heart.accuracy};
+             iris:M.iris.accuracy, wine:M.wine.accuracy, cancer:M.cancer.accuracy, heart:M.heart.accuracy,
+             diabetes:M.diabetes.accuracy, churn:M.churn.accuracy, loan:M.loan.accuracy, fashion:M.fashion.accuracy};
   document.querySelectorAll('.card').forEach((card,i)=>{
     const p=PROJECTS[i], el=card.querySelector('.nb-acc');
+    if(p.id==='chatbot'){ el.textContent='9/9 intent checks'; return; }
     el.textContent = (p.id==='house' ? 'R² ' : '') + (acc[p.id]*100).toFixed(1) + (p.id==='house'?'':'%');
   });
   document.getElementById('house_fields').innerHTML = fieldsHTML('house', M.house.features, M.house.defaults);
   document.getElementById('wine_fields').innerHTML = fieldsHTML('wine', M.wine.features, M.wine.defaults);
   document.getElementById('heart_fields').innerHTML = fieldsHTML('heart', M.heart.features, M.heart.defaults);
   document.getElementById('cancer_fields').innerHTML = fieldsHTML('cancer', M.cancer.features, M.cancer.defaults);
+  document.getElementById('diabetes_fields').innerHTML = fieldsHTML('diabetes', M.diabetes.features, M.diabetes.defaults);
+  document.getElementById('churn_fields').innerHTML = fieldsHTML('churn', M.churn.features, M.churn.defaults);
+  document.getElementById('loan_fields').innerHTML = fieldsHTML('loan', M.loan.features, M.loan.defaults);
 }
 fetch('models.json').then(r=>{ if(!r.ok) throw 0; return r.json(); })
  .then(m=>{ M=m; start(); })
  .catch(()=>Promise.all([
   'models/m_sentiment.json','models/m_spam.json','models/m_fakenews.json','models/m_tabular.json',
-  'models/m_mnist_meta.json','models/m_mnist_0.json','models/m_mnist_1.json','models/m_mnist_2.json','models/m_mnist_3.json'
+  'models/m_mnist_meta.json','models/m_mnist_0.json','models/m_mnist_1.json','models/m_mnist_2.json','models/m_mnist_3.json',
+  'models/m_fashion_meta.json','models/m_fashion_0.json','models/m_fashion_1.json','models/m_fashion_2.json','models/m_fashion_3.json'
  ].map(u=>fetch(u).then(r=>r.json()))).then(parts=>{
   M = Object.assign({}, ...parts);
   M.mnist = Object.assign({}, M.mnist_meta, {W1: [...parts[5].W1part, ...parts[6].W1part, ...parts[7].W1part, ...parts[8].W1part]});
   delete M.mnist_meta;
+  M.fashion = Object.assign({}, M.fashion_meta, {W1: [...parts[10].W1part, ...parts[11].W1part, ...parts[12].W1part, ...parts[13].W1part]});
+  delete M.fashion_meta;
   start();
  }).catch(()=>{ document.querySelector('header p').textContent='Loading models… if this persists, please refresh.'; }));
 </script>

@@ -154,6 +154,81 @@ sc = StandardScaler().fit(a)
 m = LogisticRegression(max_iter=5000).fit(sc.transform(a), ya)
 export_scaled_lr("heart", a, ya, accuracy_score(yb, m.predict(sc.transform(b))), "Disease signs present", "No disease signs", X.median())
 
+# ---------------------------------------------------------------- Batch 3 models
+def get_bytes(url):
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+    with urllib.request.urlopen(req, timeout=60) as r: return r.read()
+
+# Diabetes — Pima (scaled LR, all 8 clinical features)
+try:
+    d = pd.read_csv(io.BytesIO(get_bytes("https://raw.githubusercontent.com/npradaschnor/Pima-Indians-Diabetes-Dataset/master/diabetes.csv")))
+    target = "Outcome"
+except Exception:
+    d = pd.read_csv(io.BytesIO(get_bytes("https://raw.githubusercontent.com/plotly/datasets/master/diabetes.csv")))
+    target = "label"
+X = d.drop(columns=[target]); y = d[target].astype(int)
+a, b, ya, yb = train_test_split(X, y, test_size=0.25, random_state=42, stratify=y)
+sc = StandardScaler().fit(a)
+m = LogisticRegression(max_iter=5000).fit(sc.transform(a), ya)
+export_scaled_lr("diabetes", a, ya, accuracy_score(yb, m.predict(sc.transform(b))),
+                 "Higher diabetes risk", "Lower diabetes risk", X.median())
+
+# Customer Churn — Telco (scaled LR on 12 readable features incl. contract/internet dummies)
+raw = get_bytes("https://raw.githubusercontent.com/IBM/telco-customer-churn-on-icp4d/master/data/Telco-Customer-Churn.csv")
+d = pd.read_csv(io.BytesIO(raw))
+d["TotalCharges"] = pd.to_numeric(d["TotalCharges"], errors="coerce")
+d = d.dropna().drop(columns=["customerID"])
+y = (d["Churn"] == "Yes").astype(int)
+dX = pd.get_dummies(d.drop(columns=["Churn"]), drop_first=True)
+keep = ["tenure", "MonthlyCharges", "TotalCharges", "SeniorCitizen", "Partner_Yes", "Dependents_Yes",
+        "PaperlessBilling_Yes", "Contract_One year", "Contract_Two year",
+        "InternetService_Fiber optic", "InternetService_No", "PaymentMethod_Electronic check"]
+X = dX[keep].astype(float)
+a, b, ya, yb = train_test_split(X, y, test_size=0.25, random_state=42, stratify=y)
+sc = StandardScaler().fit(a)
+m = LogisticRegression(max_iter=5000).fit(sc.transform(a), ya)
+export_scaled_lr("churn", a, ya, accuracy_score(yb, m.predict(sc.transform(b))),
+                 "Likely to CHURN", "Likely to stay", X.median())
+
+# Loan Credit Risk — German Credit (scaled LR on the 7 numeric features; full notebook uses all 20)
+raw = get_bytes("https://archive.ics.uci.edu/static/public/144/statlog+german+credit+data.zip")
+zf = zipfile.ZipFile(io.BytesIO(raw))
+gname = [n for n in zf.namelist() if n.endswith("german.data")][0]
+gcols = ["status", "duration", "credit_history", "purpose", "amount", "savings", "employment",
+         "installment_rate", "personal_status", "other_debtors", "residence", "property", "age",
+         "other_installments", "housing", "existing_credits", "job", "dependents", "telephone", "foreign", "risk"]
+d = pd.read_csv(io.StringIO(zf.read(gname).decode()), sep=r"\s+", header=None, names=gcols)
+y = (d["risk"] == 1).astype(int)
+X = d[["duration", "amount", "installment_rate", "residence", "age", "existing_credits", "dependents"]].astype(float)
+a, b, ya, yb = train_test_split(X, y, test_size=0.25, random_state=42, stratify=y)
+sc = StandardScaler().fit(a)
+m = LogisticRegression(max_iter=5000).fit(sc.transform(a), ya)
+export_scaled_lr("loan", a, ya, accuracy_score(yb, m.predict(sc.transform(b))),
+                 "Good credit risk", "Bad credit risk", X.median())
+
+# Fashion-MNIST MLP (784-64-10 on full 60k, same recipe as MNIST)
+print("training Fashion-MNIST web model (784-64-10 on full 60k)...")
+import gzip as _gzip
+def idx_images(url):
+    raw = _gzip.decompress(get_bytes(url))
+    n = int.from_bytes(raw[4:8], "big")
+    return np.frombuffer(raw[16:], dtype=np.uint8).reshape(n, -1)
+def idx_labels(url):
+    raw = _gzip.decompress(get_bytes(url))
+    return np.frombuffer(raw[8:], dtype=np.uint8)
+FB = "https://storage.googleapis.com/tensorflow/tf-keras-datasets/"
+Xtr = idx_images(FB + "train-images-idx3-ubyte.gz") / 255.0; ytr = idx_labels(FB + "train-labels-idx1-ubyte.gz")
+Xte = idx_images(FB + "t10k-images-idx3-ubyte.gz") / 255.0; yte = idx_labels(FB + "t10k-labels-idx1-ubyte.gz")
+mlp = MLPClassifier(hidden_layer_sizes=(64,), max_iter=25, random_state=42)
+mlp.fit(Xtr, ytr)
+acc = accuracy_score(yte, mlp.predict(Xte))
+R3 = lambda arr: np.round(arr, 3).tolist()
+OUT["fashion"] = {"type": "mlp", "W1": R3(mlp.coefs_[0]), "b1": R3(mlp.intercepts_[0]),
+                  "W2": R3(mlp.coefs_[1]), "b2": R3(mlp.intercepts_[1]),
+                  "accuracy": round(float(acc), 4),
+                  "labels": ["T-shirt/top", "Trouser", "Pullover", "Dress", "Coat", "Sandal", "Shirt", "Sneaker", "Bag", "Ankle boot"]}
+print("fashion acc", OUT["fashion"]["accuracy"])
+
 # ---------------------------------------------------------------- MNIST MLP
 print("training MNIST web model (784-64-10 on full 60k)...")
 with urllib.request.urlopen("https://storage.googleapis.com/tensorflow/tf-keras-datasets/mnist.npz") as r:
@@ -181,7 +256,7 @@ def trunc(model, n):
     out = dict(model); out["vocab"] = dict(items); return out
 for name, n in [("sentiment", 3200), ("spam", 3000), ("fakenews", 3200)]:
     json.dump({name: trunc(OUT[name], n)}, open(f"models/m_{name}.json", "w"), separators=(",", ":"))
-json.dump({k: OUT[k] for k in ["titanic", "house", "iris", "cancer", "wine", "heart"]},
+json.dump({k: OUT[k] for k in ["titanic", "house", "iris", "cancer", "wine", "heart", "diabetes", "churn", "loan"]},
           open("models/m_tabular.json", "w"), separators=(",", ":"))
 W1 = OUT["mnist"]["W1"]
 for i in range(0, 784, 196):
@@ -189,4 +264,10 @@ for i in range(0, 784, 196):
 json.dump({"mnist_meta": {"b1": OUT["mnist"]["b1"], "W2": OUT["mnist"]["W2"], "b2": OUT["mnist"]["b2"],
                           "accuracy": OUT["mnist"]["accuracy"], "type": "mlp"}},
           open("models/m_mnist_meta.json", "w"), separators=(",", ":"))
+W1 = OUT["fashion"]["W1"]
+for i in range(0, 784, 196):
+    json.dump({"W1part": W1[i:i+196]}, open(f"models/m_fashion_{i//196}.json", "w"), separators=(",", ":"))
+json.dump({"fashion_meta": {"b1": OUT["fashion"]["b1"], "W2": OUT["fashion"]["W2"], "b2": OUT["fashion"]["b2"],
+                            "accuracy": OUT["fashion"]["accuracy"], "type": "mlp", "labels": OUT["fashion"]["labels"]}},
+          open("models/m_fashion_meta.json", "w"), separators=(",", ":"))
 print("split model files written to models/")
