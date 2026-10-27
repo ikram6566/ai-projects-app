@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Projects Lab — 25 Working Machine-Learning Apps</title>
-<meta name="description" content="Twenty-five real machine-learning projects you can use right in your browser — sentiment analysis, spam & fraud detection, fake-news detection, digit, clothing & activity recognition, churn, credit risk, a movie recommender, CIFAR-10 image AI and more. Free, no sign-up.">
+<title>AI Projects Lab — 30 Working Machine-Learning Apps</title>
+<meta name="description" content="Thirty real machine-learning projects you can use right in your browser — sentiment analysis, spam & fraud detection, fake-news detection, digit, clothing & activity recognition, churn, credit risk, a movie recommender, CIFAR-10 and CNN image AI and more. Free, no sign-up.">
 <style>
   :root{--bg:#0b1020;--card:#131a30;--card2:#0f1528;--line:#24304f;--txt:#e8ecf6;--mut:#9aa7c7;--acc:#4f8cff;--good:#2fbf71;--bad:#ff5d5d;--warn:#ffb020}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -54,7 +54,7 @@
 <body>
 <header>
   <h1>AI Projects <span>Lab</span></h1>
-  <p>Twenty-five real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, chat, upload and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
+  <p>Thirty real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, chat, upload and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
   <a class="ghbtn" href="https://github.com/ikram6566/ai-projects-portfolio" target="_blank" rel="noopener">📂 Notebooks &amp; code on GitHub</a>
 </header>
 <main>
@@ -150,6 +150,43 @@ function cnnPredict(model, img){ // img: 32x32x3 nested array of 0..1 — small 
   return ex.map(v=>v/tot);
 }
 function treeWalk(node, x){ while(node.p === undefined){ node = x[node.f] <= node.t ? node.l : node.r; } return node.p; }
+function cnnPredictM(model, gray){
+  // MNIST CNN: conv32 -> pool -> conv64 -> pool -> dense64 -> dense10, input 28x28 grayscale 0..1
+  const W = model.w;
+  const c1 = new Float32Array(26*26*32);
+  for(let y=0;y<26;y++) for(let x=0;x<26;x++) for(let oc=0;oc<32;oc++){
+    let s = W[288+oc];
+    for(let kh=0;kh<3;kh++) for(let kw=0;kw<3;kw++) s += gray[(y+kh)*28+(x+kw)] * W[((kh*3+kw)*1+0)*32+oc];
+    c1[(y*26+x)*32+oc] = Math.max(0, s);
+  }
+  const p1 = new Float32Array(13*13*32);
+  for(let y=0;y<13;y++) for(let x=0;x<13;x++) for(let c=0;c<32;c++){
+    let mx = 0;
+    for(let dy=0;dy<2;dy++) for(let dx=0;dx<2;dx++) mx = Math.max(mx, c1[((2*y+dy)*26+(2*x+dx))*32+c]);
+    p1[(y*13+x)*32+c] = mx;
+  }
+  const c2 = new Float32Array(11*11*64);
+  for(let y=0;y<11;y++) for(let x=0;x<11;x++) for(let oc=0;oc<64;oc++){
+    let s = W[18752+oc];
+    for(let kh=0;kh<3;kh++) for(let kw=0;kw<3;kw++) for(let ic=0;ic<32;ic++)
+      s += p1[((y+kh)*13+(x+kw))*32+ic] * W[320 + ((kh*3+kw)*32+ic)*64 + oc];
+    c2[(y*11+x)*64+oc] = Math.max(0, s);
+  }
+  const flat = new Float32Array(1600);
+  for(let y=0;y<5;y++) for(let x=0;x<5;x++) for(let c=0;c<64;c++){
+    let mx = 0;
+    for(let dy=0;dy<2;dy++) for(let dx=0;dx<2;dx++) mx = Math.max(mx, c2[((2*y+dy)*11+(2*x+dx))*64+c]);
+    flat[(y*5+x)*64+c] = mx;
+  }
+  const h = new Float32Array(64);
+  for(let j=0;j<64;j++){ let s = W[121216+j]; for(let i=0;i<1600;i++) s += flat[i]*W[18816 + i*64 + j]; h[j] = Math.max(0, s); }
+  const out = new Float32Array(10);
+  let mx = -1e9;
+  for(let j=0;j<10;j++){ let s = W[121920+j]; for(let i=0;i<64;i++) s += h[i]*W[121280 + i*10 + j]; out[j] = s; if(s>mx) mx = s; }
+  let tot = 0; for(let j=0;j<10;j++){ out[j] = Math.exp(out[j]-mx); tot += out[j]; }
+  for(let j=0;j<10;j++) out[j] /= tot;
+  return out;
+}
 function mlpPredict(model, px){
   const h = model.b1.map((b,j)=>{ let s=b; for(let i=0;i<784;i++) if(px[i]) s+=px[i]*model.W1[i][j]; return Math.max(0,s); });
   const sc = model.b2.map((b,k)=>{ let s=b; for(let j=0;j<h.length;j++) s+=h[j]*model.W2[j][k]; return s; });
@@ -329,6 +366,36 @@ const PROJECTS = [
    <button class="go" onclick="runBike()">Predict rentals</button>
    <div class="result" id="bk_res"><div class="verdict"></div><div class="bar"><i style="background:var(--acc)"></i></div><div class="pct note"></div></div>
    <div class="note">Browser demo uses a linear model (R² 0.684); the notebook's Random Forest reaches R² 0.918. Leakage features (casual + registered counts) are deliberately excluded.</div>`},
+ {id:'shoppers', icon:'🛒', name:'Will This Shopper Buy?', folder:'26-online-shoppers-intention',
+  desc:'Predict whether an e-commerce session ends in a purchase, from browsing behaviour — page values, dwell time, bounce and exit rates.',
+  panel:()=>`<details><summary style="cursor:pointer;color:var(--mut);font-size:.85rem">Edit session features (defaults are medians; PageValues is the strongest signal — try raising it)</summary><div class="row3" id="shoppers_fields" style="margin-top:8px"></div></details>
+   <button class="go" onclick="runShoppers()">Predict purchase</button>
+   <div class="result" id="sh_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>
+   <div class="note">Trained on 12,330 real sessions (UCI). The notebook's Random Forest scores 89.9% — this browser logistic model is the lighter version.</div>`},
+ {id:'concrete', icon:'🏗️', name:'Concrete Strength Predictor', folder:'27-concrete-strength-prediction',
+  desc:'How strong will this concrete mix be? Enter the recipe and curing age — the model estimates compressive strength in MPa.',
+  panel:()=>`<div class="row" id="concrete_fields"></div>
+   <button class="go" onclick="runConcrete()">Predict strength</button>
+   <div class="result" id="co_res"><div class="verdict"></div><div class="bar"><i style="background:var(--acc)"></i></div><div class="pct note"></div></div>
+   <div class="note">Ingredients in kg per m³, age in days. Browser demo is a linear model; the notebook's Random Forest (R² 0.891) captures the curing curve far better.</div>`},
+ {id:'parkinsons', icon:'🧠', name:"Parkinson's Voice Pattern Check", folder:'28-parkinsons-detection',
+  desc:'Voice measurements (pitch, jitter, shimmer) classified against healthy vs Parkinson\u2019s patterns. A research demo with an honest caveat — not a medical tool.',
+  panel:()=>`<details><summary style="cursor:pointer;color:var(--mut);font-size:.85rem">Edit the 22 voice measurements (defaults are dataset medians)</summary><div class="row3" id="park_fields" style="margin-top:8px"></div></details>
+   <button class="go" onclick="runParkinsons()">Check pattern</button>
+   <div class="result" id="pk_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>
+   <div class="disc">⚠️ Research demo only. The dataset holds 195 recordings from just 31 people, so scores are optimistic. This does not diagnose anything — see a doctor with any concern.</div>`},
+ {id:'newsgroups', icon:'💬', name:'Newsgroup Topic Classifier', folder:'29-newsgroups-classification',
+  desc:'Paste any post or paragraph — the model assigns it to one of the 20 classic Usenet newsgroups (space, hockey, cryptography, religion…).',
+  panel:()=>`<label>Post text</label><textarea id="ng_in" rows="3">The shuttle launch was delayed again because of a faulty oxygen sensor, but the crew is ready for another attempt next week.</textarea>
+   <button class="go" onclick="runNewsgroups()">Classify newsgroup</button>
+   <div class="result" id="ng_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="ng_all"></div></div>
+   <div class="note">Trained on 11,314 Usenet posts (TF-IDF + logistic regression, 82.6% across 20 topics).</div>`},
+ {id:'mnistcnn', icon:'🔢', name:'Digit Recognizer — CNN Edition', folder:'30-mnist-digit-cnn',
+  desc:'Same drawing board, smarter brain: a convolutional network (98.9%) instead of the plain MLP in project 05 (96.2%). Draw a digit and compare!',
+  panel:()=>`<div class="drawwrap"><canvas id="mnistc_cv" class="drawcv" width="280" height="280"></canvas></div>
+   <div class="row"><button class="go" onclick="runMnistCnn()">Recognize digit (CNN)</button><button class="alt" onclick="clearMnistCnn()">Clear</button></div>
+   <div class="result" id="mc_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>
+   <div class="note">The CNN runs as a real forward pass in your browser — convolutions, pooling and all.</div>`},
 ];
 
 const grid=document.getElementById('grid');
@@ -347,6 +414,7 @@ function togglePanel(id, btn){
   const open=el.classList.toggle('open');
   btn.textContent = open ? '▼ Close' : '▶ Try it live';
   if(id==='mnist' && open) initDigit();
+  if(id==='mnistcnn' && open) initDigitC();
   if(id==='fashion' && open) initFashion();
 }
 
@@ -503,6 +571,77 @@ function runBike(){
   r.querySelector('.bar i').style.width='100%';
   r.querySelector('.pct').textContent='Linear browser model: R² '+M.bike.r2+', average error ±'+Math.round(M.bike.mae)+' bikes (notebook Random Forest: R² 0.918)';
 }
+function runShoppers(){
+  const x = readFields('shoppers', M.shoppers.features);
+  const p = scaledLR(M.shoppers, x);
+  showResult('sh_res', p>=0.5?'🛒 Likely to PURCHASE':'👋 Likely to leave without buying', p>=0.5?p:1-p, p>=0.5);
+}
+function runConcrete(){
+  const x = readFields('concrete', M.concrete.features);
+  const v = Math.max(0, linear(M.concrete, x));
+  const r=document.getElementById('co_res'); r.classList.add('show');
+  r.querySelector('.verdict').textContent='🏗️ Estimated strength: '+v.toFixed(1)+' MPa';
+  r.querySelector('.bar i').style.width='100%';
+  r.querySelector('.pct').textContent='Linear browser model: R² '+M.concrete.r2+', average error ±'+M.concrete.mae+' MPa (notebook Random Forest: R² 0.891). Typical structural concrete is 25–40 MPa.';
+}
+function runParkinsons(){
+  const x = readFields('parkinsons', M.parkinsons.features);
+  const p = scaledLR(M.parkinsons, x);
+  showResult('pk_res', p>=0.5?"Pattern matches the Parkinson's group":"Pattern matches the healthy group", p>=0.5?p:1-p, null);
+}
+function runNewsgroups(){
+  const p = tfidfSoftmax(M.newsgroups, document.getElementById('ng_in').value);
+  const order = p.map((v,i)=>[v,i]).sort((a,b)=>b[0]-a[0]);
+  showResult('ng_res','💬 Newsgroup: '+M.newsgroups.classes[order[0][1]], order[0][0], null);
+  document.getElementById('ng_all').textContent = 'Top 5: ' + order.slice(0,5).map(([v,i])=>M.newsgroups.classes[i]+' '+(v*100).toFixed(1)+'%').join(' · ');
+}
+function getPixels28(id){
+  // same bounding-box crop + centering normalisation the MLP card uses
+  const cv = document.getElementById(id), ctx = cv.getContext('2d');
+  const img = ctx.getImageData(0, 0, 280, 280).data;
+  let minx = 280, miny = 280, maxx = -1, maxy = -1;
+  for(let y = 0; y < 280; y++) for(let x = 0; x < 280; x++){
+    const v = img[(y*280 + x)*4] / 255;
+    if(v > 0.35){ if(x < minx) minx = x; if(x > maxx) maxx = x; if(y < miny) miny = y; if(y > maxy) maxy = y; }
+  }
+  if(maxx < 0) return null;
+  const bw = maxx - minx + 1, bh = maxy - miny + 1, scale = 20 / Math.max(bw, bh);
+  const off = document.createElement('canvas'); off.width = 28; off.height = 28;
+  const octx = off.getContext('2d'); octx.fillStyle = '#000'; octx.fillRect(0, 0, 28, 28);
+  const tmp = document.createElement('canvas'); tmp.width = 280; tmp.height = 280; tmp.getContext('2d').drawImage(cv, 0, 0);
+  octx.imageSmoothingEnabled = true;
+  octx.drawImage(tmp, minx, miny, bw, bh, (28 - bw*scale)/2, (28 - bh*scale)/2, bw*scale, bh*scale);
+  const small = octx.getImageData(0, 0, 28, 28).data;
+  const out = new Float32Array(784);
+  for(let i = 0; i < 784; i++) out[i] = small[i*4] / 255;
+  return out;
+}
+function runMnistCnn(){
+  const px = getPixels28('mnistc_cv');
+  if(!px){ alert('Draw a digit first 🙂'); return; }
+  const probs = cnnPredictM(M.mnistcnn, px);
+  const k = probs.indexOf(Math.max(...probs));
+  showResult('mc_res','🔢 The digit is: '+k, probs[k], null);
+}
+let digitCInit = false;
+function initDigitC(){
+  if(digitCInit) return; digitCInit = true;
+  const cv = document.getElementById('mnistc_cv'), ctx = cv.getContext('2d');
+  ctx.fillStyle = '#000'; ctx.fillRect(0, 0, 280, 280);
+  ctx.strokeStyle = '#fff'; ctx.lineWidth = 16; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  let drawing = false, last = null;
+  const pos = e => { const r = cv.getBoundingClientRect(); const t = e.touches ? e.touches[0] : e; return {x:(t.clientX - r.left)*280/r.width, y:(t.clientY - r.top)*280/r.height}; };
+  const start = e => { drawing = true; last = pos(e); e.preventDefault(); };
+  const move = e => { if(!drawing) return; const p = pos(e); ctx.beginPath(); ctx.moveTo(last.x, last.y); ctx.lineTo(p.x, p.y); ctx.stroke(); last = p; e.preventDefault(); };
+  const end = () => drawing = false;
+  cv.addEventListener('mousedown', start); cv.addEventListener('mousemove', move); window.addEventListener('mouseup', end);
+  cv.addEventListener('touchstart', start, {passive:false}); cv.addEventListener('touchmove', move, {passive:false}); cv.addEventListener('touchend', end);
+}
+function clearMnistCnn(){
+  const cv = document.getElementById('mnistc_cv'), g = cv.getContext('2d');
+  g.fillStyle = '#000'; g.fillRect(0, 0, cv.width, cv.height);
+  document.getElementById('mc_res').classList.remove('show');
+}
 function runLoan(){
   const x = readFields('loan', M.loan.features);
   const p = scaledLR(M.loan, x);
@@ -632,7 +771,9 @@ function start(){
              iris:M.iris.accuracy, wine:M.wine.accuracy, cancer:M.cancer.accuracy, heart:M.heart.accuracy,
              diabetes:M.diabetes.accuracy, churn:M.churn.accuracy, loan:M.loan.accuracy, fashion:M.fashion.accuracy,
              agnews:M.agnews.accuracy, bank:M.bank.accuracy, cifar:M.cifar.accuracy,
-             adult:M.adult.accuracy, har:M.har.accuracy, mushroom:M.mushroom.accuracy};
+             adult:M.adult.accuracy, har:M.har.accuracy, mushroom:M.mushroom.accuracy,
+             shoppers:M.shoppers.accuracy, parkinsons:M.parkinsons.accuracy,
+             newsgroups:M.newsgroups.accuracy, mnistcnn:M.mnistcnn_meta.accuracy};
   document.querySelectorAll('.card').forEach((card,i)=>{
     const p=PROJECTS[i], el=card.querySelector('.nb-acc');
     if(p.id==='chatbot'){ el.textContent='9/9 intent checks'; return; }
@@ -640,6 +781,7 @@ function start(){
     if(p.id==='stock'){ el.textContent='MAE $'+M.stock.mae.toFixed(2)+' vs naive $'+M.stock.naive_mae.toFixed(2); return; }
     if(p.id==='fraud'){ el.textContent='PR-AUC '+M.fraud.pr_auc.toFixed(2)+' · catches '+(M.fraud.recall*100).toFixed(1)+'% of fraud'; return; }
     if(p.id==='bike'){ el.textContent='R² '+(M.bike.r2*1000/1000).toFixed(3)+' (notebook RF: 0.918)'; return; }
+    if(p.id==='concrete'){ el.textContent='R² '+M.concrete.r2.toFixed(3)+' linear (notebook RF: 0.891)'; return; }
     el.textContent = (p.id==='house' ? 'R² ' : '') + (acc[p.id]*100).toFixed(1) + (p.id==='house'?'':'%');
   });
   document.getElementById('house_fields').innerHTML = fieldsHTML('house', M.house.features, M.house.defaults);
@@ -655,6 +797,9 @@ function start(){
   document.getElementById('reco_sel').innerHTML = M.reco.users.map((u,i)=>`<option value="${i}">User #${u.id} — loved “${u.favorites[0][0]}”</option>`).join('');
   runReco();
   document.getElementById('fraud_fields').innerHTML = fieldsHTML('fraud', M.fraud.features, M.fraud.defaults);
+  document.getElementById('shoppers_fields').innerHTML = fieldsHTML('shoppers', M.shoppers.features, M.shoppers.defaults);
+  document.getElementById('concrete_fields').innerHTML = fieldsHTML('concrete', M.concrete.features, M.concrete.defaults);
+  document.getElementById('park_fields').innerHTML = fieldsHTML('parkinsons', M.parkinsons.features, M.parkinsons.defaults);
   document.getElementById('adult_fields').innerHTML = fieldsHTML('adult', M.adult.features, M.adult.defaults);
   document.getElementById('bike_fields').innerHTML = fieldsHTML('bike', M.bike.features, M.bike.defaults);
   document.getElementById('har_sel').innerHTML = M.har.samples.map((s,i)=>`<option value="${i}">Sensor window #${i+1}</option>`).join('');
@@ -683,7 +828,11 @@ fetch('models.json').then(r=>{ if(!r.ok) throw 0; return r.json(); })
   'models/m_cifar_0.json','models/m_cifar_1.json','models/m_cifar_2.json','models/m_cifar_3.json','models/m_cifar_4.json',
   'models/m_cifar_5.json','models/m_cifar_6.json','models/m_cifar_7.json','models/m_cifar_8.json','models/m_cifar_9.json',
   'models/m_cifar_10.json','models/m_cifar_11.json','models/m_cifar_12.json','models/m_cifar_13.json',
-  'models/m_tabular3.json','models/m_har.json','models/m_mushroom.json'
+  'models/m_tabular3.json','models/m_har.json','models/m_mushroom.json',
+  'models/m_tabular4.json','models/m_newsgroups.json','models/m_mnistcnn_meta.json',
+  'models/m_mnistcnn_0.json','models/m_mnistcnn_1.json','models/m_mnistcnn_2.json','models/m_mnistcnn_3.json',
+  'models/m_mnistcnn_4.json','models/m_mnistcnn_5.json','models/m_mnistcnn_6.json','models/m_mnistcnn_7.json',
+  'models/m_mnistcnn_8.json','models/m_mnistcnn_9.json','models/m_mnistcnn_10.json'
  ].map(u=>fetch(u).then(r=>r.json()))).then(parts=>{
   M = Object.assign({}, ...parts);
   M.mnist = Object.assign({}, M.mnist_meta, {W1: [...parts[5].W1part, ...parts[6].W1part, ...parts[7].W1part, ...parts[8].W1part]});
@@ -691,6 +840,7 @@ fetch('models.json').then(r=>{ if(!r.ok) throw 0; return r.json(); })
   M.fashion = Object.assign({}, M.fashion_meta, {W1: [...parts[10].W1part, ...parts[11].W1part, ...parts[12].W1part, ...parts[13].W1part]});
   delete M.fashion_meta;
   M.cifar = Object.assign({}, M.cifar_meta, {weights: parts.slice(18, 32).flatMap(p=>p.cifarChunk)});
+  { const w = []; for(let i = 0; i < 11; i++) w.push(...M['mnistcnn_w' + i]); M.mnistcnn = {accuracy: M.mnistcnn_meta.accuracy, w}; }
   delete M.cifar_meta;
   start();
  }).catch(()=>{ document.querySelector('header p').textContent='Loading models… if this persists, please refresh.'; }));
