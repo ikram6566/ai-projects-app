@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Projects Lab — 30 Working Machine-Learning Apps</title>
-<meta name="description" content="Thirty real machine-learning projects you can use right in your browser — sentiment analysis, spam & fraud detection, fake-news detection, digit, clothing & activity recognition, churn, credit risk, a movie recommender, CIFAR-10 and CNN image AI and more. Free, no sign-up.">
+<title>AI Projects Lab — 35 Working Machine-Learning Apps</title>
+<meta name="description" content="Thirty-five real machine-learning projects you can use right in your browser — sentiment analysis, spam & fraud detection, fake-news detection, digit, clothing & activity recognition, churn, credit risk, a movie recommender, CIFAR-10 and CNN image AI and more. Free, no sign-up.">
 <style>
   :root{--bg:#0b1020;--card:#131a30;--card2:#0f1528;--line:#24304f;--txt:#e8ecf6;--mut:#9aa7c7;--acc:#4f8cff;--good:#2fbf71;--bad:#ff5d5d;--warn:#ffb020}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -54,7 +54,7 @@
 <body>
 <header>
   <h1>AI Projects <span>Lab</span></h1>
-  <p>Thirty real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, chat, upload and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
+  <p>Thirty-five real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, chat, upload and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
   <a class="ghbtn" href="https://github.com/ikram6566/ai-projects-portfolio" target="_blank" rel="noopener">📂 Notebooks &amp; code on GitHub</a>
 </header>
 <main>
@@ -150,6 +150,14 @@ function cnnPredict(model, img){ // img: 32x32x3 nested array of 0..1 — small 
   return ex.map(v=>v/tot);
 }
 function treeWalk(node, x){ while(node.p === undefined){ node = x[node.f] <= node.t ? node.l : node.r; } return node.p; }
+function softmaxTab(model, x){
+  const z = x.map((v, i) => (v - model.mean[i]) / model.scale[i]);
+  const scores = model.coef.map((row, k) => row.reduce((s, c, j) => s + c * z[j], model.intercept[k]));
+  const mx = Math.max(...scores);
+  const ex = scores.map(v => Math.exp(v - mx));
+  const tot = ex.reduce((a, b) => a + b, 0);
+  return ex.map(v => v / tot);
+}
 function cnnPredictM(model, gray){
   // MNIST CNN: conv32 -> pool -> conv64 -> pool -> dense64 -> dense10, input 28x28 grayscale 0..1
   const W = model.w;
@@ -396,6 +404,36 @@ const PROJECTS = [
    <div class="row"><button class="go" onclick="runMnistCnn()">Recognize digit (CNN)</button><button class="alt" onclick="clearMnistCnn()">Clear</button></div>
    <div class="result" id="mc_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div></div>
    <div class="note">The CNN runs as a real forward pass in your browser — convolutions, pooling and all.</div>`},
+ {id:'airfoil', icon:'✈️', name:'Airfoil Noise Predictor', folder:'31-airfoil-noise-prediction',
+  desc:'NASA wind-tunnel data: set the test conditions and estimate how loud an airfoil gets, in decibels.',
+  panel:()=>`<div class="row" id="airfoil_fields"></div>
+   <button class="go" onclick="runAirfoil()">Predict noise level</button>
+   <div class="result" id="af_res"><div class="verdict"></div><div class="bar"><i style="background:var(--acc)"></i></div><div class="pct note"></div></div>
+   <div class="note">Browser demo is a linear model; the notebook's Random Forest (R² 0.932) captures the physics far better. Try raising the velocity — noise climbs fast.</div>`},
+ {id:'energy', icon:'🏠', name:'Building Heating-Load Estimator', folder:'32-energy-efficiency-prediction',
+  desc:'Describe a building\u2019s shape and glazing — estimate the heating load it will need. The design-stage question behind every energy bill.',
+  panel:()=>`<div class="row" id="energy_fields"></div>
+   <button class="go" onclick="runEnergy()">Estimate heating load</button>
+   <div class="result" id="en_res"><div class="verdict"></div><div class="bar"><i style="background:var(--acc)"></i></div><div class="pct note"></div></div>
+   <div class="note">Browser demo is a linear model (R² 0.915); the notebook's Random Forest reaches R² 0.998 on these simulated buildings.</div>`},
+ {id:'pm25', icon:'🌫️', name:'Air Pollution (PM2.5) Estimator', folder:'33-beijing-pm25-prediction',
+  desc:'Beijing weather in, air quality out: estimate the PM2.5 level from temperature, dew point, pressure and wind.',
+  panel:()=>`<div class="row" id="pm25_fields"></div>
+   <button class="go" onclick="runPm25()">Estimate PM2.5</button>
+   <div class="result" id="pm_res"><div class="verdict"></div><div class="bar"><i style="background:var(--acc)"></i></div><div class="pct note"></div></div>
+   <div class="note">Honest demo: weather alone explains only part of pollution — this linear model is weak (R² 0.255) and the notebook's Random Forest does much better (R² 0.840). Scale: under 35 µg/m³ is good, over 150 is hazardous.</div>`},
+ {id:'car', icon:'🚗', name:'Car Price Estimator', folder:'34-car-price-prediction',
+  desc:'Spec-sheet pricing: engine size, weight, horsepower and dimensions in — estimated car price out.',
+  panel:()=>`<div class="row" id="car_fields"></div>
+   <button class="go" onclick="runCar()">Estimate price</button>
+   <div class="result" id="cp_res"><div class="verdict"></div><div class="bar"><i style="background:var(--acc)"></i></div><div class="pct note"></div></div>
+   <div class="note">Trained on the classic UCI Automobile data (1985-era prices). Browser model uses the numeric specs; the notebook adds make and body style (R² 0.893).</div>`},
+ {id:'bean', icon:'🫘', name:'Dry Bean Variety Classifier', folder:'35-dry-bean-classification',
+  desc:'Seven bean varieties, told apart by shape alone. Adjust the measurements — area, perimeter, axis lengths, roundness — and see which variety the model picks.',
+  panel:()=>`<details><summary style="cursor:pointer;color:var(--mut);font-size:.85rem">Edit the 16 shape measurements (defaults are dataset medians)</summary><div class="row3" id="bean_fields" style="margin-top:8px"></div></details>
+   <button class="go" onclick="runBean()">Classify bean</button>
+   <div class="result" id="bn_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="bn_all"></div></div>
+   <div class="note">Trained on 13,611 photographed beans (UCI). Shape really is nearly a fingerprint here — 92.4% accuracy.</div>`},
 ];
 
 const grid=document.getElementById('grid');
@@ -642,6 +680,40 @@ function clearMnistCnn(){
   g.fillStyle = '#000'; g.fillRect(0, 0, cv.width, cv.height);
   document.getElementById('mc_res').classList.remove('show');
 }
+function linResult(resId, label, value, unit, model, extra){
+  const r = document.getElementById(resId); r.classList.add('show');
+  r.querySelector('.verdict').textContent = label + value + unit;
+  r.querySelector('.bar i').style.width = '100%';
+  r.querySelector('.pct').textContent = extra;
+}
+function runAirfoil(){
+  const v = Math.max(0, linear(M.airfoil, readFields('airfoil', M.airfoil.features)));
+  linResult('af_res', '✈️ Estimated noise: ', v.toFixed(1), ' dB', M.airfoil,
+    'Linear browser model: average error ±' + M.airfoil.mae + ' dB (notebook Random Forest: R² 0.932, MAE 1.32 dB).');
+}
+function runEnergy(){
+  const v = Math.max(0, linear(M.energy, readFields('energy', M.energy.features)));
+  linResult('en_res', '🏠 Estimated heating load: ', v.toFixed(1), '', M.energy,
+    'Linear browser model: R² ' + M.energy.r2 + ', average error ±' + M.energy.mae + ' (notebook Random Forest: R² 0.998).');
+}
+function runPm25(){
+  const v = Math.max(0, linear(M.pm25, readFields('pm25', M.pm25.features)));
+  const band = v < 35 ? 'Good air' : v < 75 ? 'Moderate' : v < 115 ? 'Unhealthy for sensitive groups' : v < 150 ? 'Unhealthy' : 'Very unhealthy / hazardous';
+  linResult('pm_res', '🌫️ Estimated PM2.5: ', v.toFixed(0), ' µg/m³ — ' + band, M.pm25,
+    'Linear browser model: average error ±' + M.pm25.mae + ' µg/m³ (notebook Random Forest: R² 0.840, MAE 22.3).');
+}
+function runCar(){
+  const v = Math.max(0, linear(M.car, readFields('car', M.car.features)));
+  linResult('cp_res', '🚗 Estimated price: $', Math.round(v).toLocaleString('en-US'), '', M.car,
+    'Linear browser model: R² ' + M.car.r2 + ', average error ±$' + Math.round(M.car.mae).toLocaleString('en-US') + ' (notebook Random Forest: R² 0.893). Prices are 1985-era dollars.');
+}
+function runBean(){
+  const x = readFields('bean', M.bean.features);
+  const p = softmaxTab(M.bean, x);
+  const order = p.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+  showResult('bn_res', '🫘 Variety: ' + M.bean.classes[order[0][1]], order[0][0], null);
+  document.getElementById('bn_all').textContent = 'All varieties: ' + order.map(([v, i]) => M.bean.classes[i] + ' ' + (v * 100).toFixed(1) + '%').join(' · ');
+}
 function runLoan(){
   const x = readFields('loan', M.loan.features);
   const p = scaledLR(M.loan, x);
@@ -773,7 +845,7 @@ function start(){
              agnews:M.agnews.accuracy, bank:M.bank.accuracy, cifar:M.cifar.accuracy,
              adult:M.adult.accuracy, har:M.har.accuracy, mushroom:M.mushroom.accuracy,
              shoppers:M.shoppers.accuracy, parkinsons:M.parkinsons.accuracy,
-             newsgroups:M.newsgroups.accuracy, mnistcnn:M.mnistcnn_meta.accuracy};
+             newsgroups:M.newsgroups.accuracy, mnistcnn:M.mnistcnn_meta.accuracy, bean:M.bean.accuracy};
   document.querySelectorAll('.card').forEach((card,i)=>{
     const p=PROJECTS[i], el=card.querySelector('.nb-acc');
     if(p.id==='chatbot'){ el.textContent='9/9 intent checks'; return; }
@@ -782,6 +854,10 @@ function start(){
     if(p.id==='fraud'){ el.textContent='PR-AUC '+M.fraud.pr_auc.toFixed(2)+' · catches '+(M.fraud.recall*100).toFixed(1)+'% of fraud'; return; }
     if(p.id==='bike'){ el.textContent='R² '+(M.bike.r2*1000/1000).toFixed(3)+' (notebook RF: 0.918)'; return; }
     if(p.id==='concrete'){ el.textContent='R² '+M.concrete.r2.toFixed(3)+' linear (notebook RF: 0.891)'; return; }
+    if(p.id==='airfoil'){ el.textContent='R² '+M.airfoil.r2.toFixed(3)+' linear (notebook RF: 0.932)'; return; }
+    if(p.id==='energy'){ el.textContent='R² '+M.energy.r2.toFixed(3)+' linear (notebook RF: 0.998)'; return; }
+    if(p.id==='pm25'){ el.textContent='R² '+M.pm25.r2.toFixed(3)+' linear (notebook RF: 0.840)'; return; }
+    if(p.id==='car'){ el.textContent='R² '+M.car.r2.toFixed(3)+' linear (notebook RF: 0.893)'; return; }
     el.textContent = (p.id==='house' ? 'R² ' : '') + (acc[p.id]*100).toFixed(1) + (p.id==='house'?'':'%');
   });
   document.getElementById('house_fields').innerHTML = fieldsHTML('house', M.house.features, M.house.defaults);
@@ -800,6 +876,11 @@ function start(){
   document.getElementById('shoppers_fields').innerHTML = fieldsHTML('shoppers', M.shoppers.features, M.shoppers.defaults);
   document.getElementById('concrete_fields').innerHTML = fieldsHTML('concrete', M.concrete.features, M.concrete.defaults);
   document.getElementById('park_fields').innerHTML = fieldsHTML('parkinsons', M.parkinsons.features, M.parkinsons.defaults);
+  document.getElementById('airfoil_fields').innerHTML = fieldsHTML('airfoil', M.airfoil.features, M.airfoil.defaults);
+  document.getElementById('energy_fields').innerHTML = fieldsHTML('energy', M.energy.features, M.energy.defaults);
+  document.getElementById('pm25_fields').innerHTML = fieldsHTML('pm25', M.pm25.features, M.pm25.defaults);
+  document.getElementById('car_fields').innerHTML = fieldsHTML('car', M.car.features, M.car.defaults);
+  document.getElementById('bean_fields').innerHTML = fieldsHTML('bean', M.bean.features, M.bean.defaults);
   document.getElementById('adult_fields').innerHTML = fieldsHTML('adult', M.adult.features, M.adult.defaults);
   document.getElementById('bike_fields').innerHTML = fieldsHTML('bike', M.bike.features, M.bike.defaults);
   document.getElementById('har_sel').innerHTML = M.har.samples.map((s,i)=>`<option value="${i}">Sensor window #${i+1}</option>`).join('');
@@ -832,7 +913,8 @@ fetch('models.json').then(r=>{ if(!r.ok) throw 0; return r.json(); })
   'models/m_tabular4.json','models/m_newsgroups.json','models/m_mnistcnn_meta.json',
   'models/m_mnistcnn_0.json','models/m_mnistcnn_1.json','models/m_mnistcnn_2.json','models/m_mnistcnn_3.json',
   'models/m_mnistcnn_4.json','models/m_mnistcnn_5.json','models/m_mnistcnn_6.json','models/m_mnistcnn_7.json',
-  'models/m_mnistcnn_8.json','models/m_mnistcnn_9.json','models/m_mnistcnn_10.json'
+  'models/m_mnistcnn_8.json','models/m_mnistcnn_9.json','models/m_mnistcnn_10.json',
+  'models/m_tabular5.json','models/m_bean.json'
  ].map(u=>fetch(u).then(r=>r.json()))).then(parts=>{
   M = Object.assign({}, ...parts);
   M.mnist = Object.assign({}, M.mnist_meta, {W1: [...parts[5].W1part, ...parts[6].W1part, ...parts[7].W1part, ...parts[8].W1part]});
