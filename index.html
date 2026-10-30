@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Projects Lab — 45 Working Machine-Learning Apps</title>
-<meta name="description" content="Forty-five real machine-learning projects you can use right in your browser — sentiment analysis, spam & fraud detection, fake-news detection, digit, clothing & activity recognition, churn, credit risk, a movie recommender, CIFAR-10 and CNN image AI and more. Free, no sign-up.">
+<title>AI Projects Lab — 50 Working Machine-Learning Apps</title>
+<meta name="description" content="Fifty real machine-learning projects you can use right in your browser — sentiment analysis, spam & fraud detection, fake-news detection, digit, clothing & activity recognition, churn, credit risk, a movie recommender, CIFAR-10 and CNN image AI and more. Free, no sign-up.">
 <style>
   :root{--bg:#0b1020;--card:#131a30;--card2:#0f1528;--line:#24304f;--txt:#e8ecf6;--mut:#9aa7c7;--acc:#4f8cff;--good:#2fbf71;--bad:#ff5d5d;--warn:#ffb020}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -54,7 +54,7 @@
 <body>
 <header>
   <h1>AI Projects <span>Lab</span></h1>
-  <p>Forty-five real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, chat, upload and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
+  <p>Fifty real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, chat, upload and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
   <a class="ghbtn" href="https://github.com/ikram6566/ai-projects-portfolio" target="_blank" rel="noopener">📂 Notebooks &amp; code on GitHub</a>
 </header>
 <main>
@@ -494,6 +494,36 @@ const PROJECTS = [
    <button class="go" onclick="runWave()">Classify waveform</button>
    <div class="result" id="wv_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="wv_all"></div></div>
    <div class="note">5,000 generated waveforms (UCI). This browser model matches the notebook's logistic regression (86.8%) — essentially at the ~86% theoretical Bayes limit for this problem, so no model can do much better. Its Random Forest scores 84.8%.</div>`},
+ {id:'credit', icon:'💳', name:'Credit Approval Predictor', folder:'46-credit-approval',
+  desc:'Should this application be approved? The classic benchmark whose 15 attributes were anonymised by its creators (A1, A2, …), so the model learns the pattern of past decisions without anyone knowing what the attributes mean. Missing values included, handled honestly.',
+  panel:()=>`<details><summary style="cursor:pointer;color:var(--mut);font-size:.85rem">Edit the 51 encoded features (defaults are medians; 0/1 values are one-hot categories)</summary><div class="row3" id="credit_fields" style="margin-top:8px"></div></details>
+   <button class="go" onclick="runCredit()">Decide application</button>
+   <div class="result" id="cr_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="cr_all"></div></div>
+   <div class="note">690 real (anonymised) applications (UCI). This browser model matches the notebook's logistic regression (83.8%); its Random Forest reaches 84.4%. A demo of pattern-learning — not lending advice.</div>`},
+ {id:'banknote', icon:'💵', name:'Banknote Forgery Detector', folder:'47-banknote-authentication',
+  desc:'Genuine or forged? Four statistics from a wavelet transform of the note\u2019s image — variance, skewness, curtosis, entropy — separate real notes from counterfeits almost perfectly.',
+  panel:()=>`<div class="row" id="banknote_fields"></div>
+   <button class="go" onclick="runBanknote()">Check banknote</button>
+   <div class="result" id="bk_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="bk_all"></div></div>
+   <div class="note">1,372 notes (UCI) — 762 genuine, 610 forged. This browser model matches the notebook's logistic regression (97.4%); its Random Forest reaches 99.4%.</div>`},
+ {id:'pageblocks', icon:'📄', name:'Page Block Classifier', folder:'48-page-blocks-classification',
+  desc:'Before OCR can read a scanned page, every block must be typed: text, rule line, picture or graphic. Ten geometry measurements do the typing.',
+  panel:()=>`<details><summary style="cursor:pointer;color:var(--mut);font-size:.85rem">Edit the 10 block measurements (defaults are medians)</summary><div class="row3" id="pageblocks_fields" style="margin-top:8px"></div></details>
+   <button class="go" onclick="runPageblocks()">Classify block</button>
+   <div class="result" id="pb_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="pb_all"></div></div>
+   <div class="note">5,473 blocks from scanned documents (UCI). Honest caveat: ~90% are text, so the headline accuracy flatters — picture blocks (28 examples) are the hard case. Browser model matches the notebook's logistic regression (96.6%); its Random Forest reaches 97.8%.</div>`},
+ {id:'vehicle', icon:'🚐', name:'Vehicle Silhouette Classifier', folder:'49-vehicle-silhouettes',
+  desc:'Bus, van, or one of two car models — identified from 18 measurements of the vehicle\u2019s silhouette alone.',
+  panel:()=>`<details><summary style="cursor:pointer;color:var(--mut);font-size:.85rem">Edit the 18 silhouette measurements (defaults are medians)</summary><div class="row3" id="vehicle_fields" style="margin-top:8px"></div></details>
+   <button class="go" onclick="runVehicle()">Identify vehicle</button>
+   <div class="result" id="vh_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="vh_all"></div></div>
+   <div class="note">845 vehicles (UCI Statlog); one corrupted row in UCI's file was dropped, and the notebook shows the drop. A case where the simple model wins: browser model matches the notebook's logistic regression (82.1%); its Random Forest scores 73.6%.</div>`},
+ {id:'yeast', icon:'🧫', name:'Yeast Protein Localisation', folder:'50-yeast-classification',
+  desc:'Where inside the cell does this yeast protein belong? Eight sequence-derived scores predict one of ten localisation sites — a foundational computational-biology benchmark.',
+  panel:()=>`<div class="row" id="yeast_fields"></div>
+   <button class="go" onclick="runYeast()">Locate protein</button>
+   <div class="result" id="ys_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="ys_all"></div></div>
+   <div class="note">1,484 proteins (UCI). Honestly hard: classes are very uneven — the rarest site (ERL) has just 5 samples, so per-class results there are weak. Browser model matches the notebook's logistic regression (59.3%); its Random Forest reaches 64.7%.</div>`},
 ];
 
 const grid=document.getElementById('grid');
@@ -836,6 +866,46 @@ function runWave(){
   showResult('wv_res', '〰️ Waveform class ' + M.wave.classes[order[0][1]], order[0][0], null);
   document.getElementById('wv_all').textContent = 'All classes: ' + order.map(([v, i]) => 'Class ' + M.wave.classes[i] + ' ' + (v * 100).toFixed(1) + '%').join(' · ');
 }
+const CREDIT_NAMES = {'+':'✅ Approved','-':'❌ Declined'};
+function runCredit(){
+  const p = softmaxTab(M.credit, readFields('credit', M.credit.features));
+  const order = p.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+  const top = M.credit.classes[order[0][1]];
+  showResult('cr_res', '💳 Decision: ' + (CREDIT_NAMES[top] || top), order[0][0], top === '+');
+  document.getElementById('cr_all').textContent = 'All outcomes: ' + order.map(([v, i]) => (CREDIT_NAMES[M.credit.classes[i]] || M.credit.classes[i]) + ' ' + (v * 100).toFixed(1) + '%').join(' · ');
+}
+const BANKNOTE_NAMES = {'0':'Genuine note','1':'Forged note'};
+function runBanknote(){
+  const p = softmaxTab(M.banknote, readFields('banknote', M.banknote.features));
+  const order = p.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+  const top = M.banknote.classes[order[0][1]];
+  showResult('bk_res', top === '0' ? '💵 Genuine note' : '🚨 Forged note', order[0][0], top === '0');
+  document.getElementById('bk_all').textContent = 'All outcomes: ' + order.map(([v, i]) => (BANKNOTE_NAMES[M.banknote.classes[i]] || M.banknote.classes[i]) + ' ' + (v * 100).toFixed(1) + '%').join(' · ');
+}
+const PAGEBLOCK_NAMES = {'1':'Text','2':'Horizontal line','3':'Picture','4':'Vertical line','5':'Graphic'};
+function runPageblocks(){
+  const p = softmaxTab(M.pageblocks, readFields('pageblocks', M.pageblocks.features));
+  const order = p.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+  const top = M.pageblocks.classes[order[0][1]];
+  showResult('pb_res', '📄 Block type: ' + (PAGEBLOCK_NAMES[top] || top), order[0][0], null);
+  document.getElementById('pb_all').textContent = 'All types: ' + order.map(([v, i]) => (PAGEBLOCK_NAMES[M.pageblocks.classes[i]] || M.pageblocks.classes[i]) + ' ' + (v * 100).toFixed(1) + '%').join(' · ');
+}
+const VEHICLE_NAMES = {'bus':'Bus','opel':'Opel car','saab':'Saab car','van':'Van'};
+function runVehicle(){
+  const p = softmaxTab(M.vehicle, readFields('vehicle', M.vehicle.features));
+  const order = p.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+  const top = M.vehicle.classes[order[0][1]];
+  showResult('vh_res', '🚐 Vehicle: ' + (VEHICLE_NAMES[top] || top), order[0][0], null);
+  document.getElementById('vh_all').textContent = 'All types: ' + order.map(([v, i]) => (VEHICLE_NAMES[M.vehicle.classes[i]] || M.vehicle.classes[i]) + ' ' + (v * 100).toFixed(1) + '%').join(' · ');
+}
+const YEAST_NAMES = {'CYT':'Cytosol (CYT)','NUC':'Nucleus (NUC)','MIT':'Mitochondria (MIT)','ME1':'Membrane — no signal (ME1)','ME2':'Membrane — uncleaved signal (ME2)','ME3':'Membrane — cleaved signal (ME3)','EXC':'Extracellular / secreted (EXC)','VAC':'Vacuole (VAC)','POX':'Peroxisome (POX)','ERL':'ER lumen (ERL)'};
+function runYeast(){
+  const p = softmaxTab(M.yeast, readFields('yeast', M.yeast.features));
+  const order = p.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+  const top = M.yeast.classes[order[0][1]];
+  showResult('ys_res', '🧫 Localisation: ' + (YEAST_NAMES[top] || top), order[0][0], null);
+  document.getElementById('ys_all').textContent = 'All sites: ' + order.map(([v, i]) => (YEAST_NAMES[M.yeast.classes[i]] || M.yeast.classes[i]) + ' ' + (v * 100).toFixed(1) + '%').join(' · ');
+}
 function runLoan(){
   const x = readFields('loan', M.loan.features);
   const p = scaledLR(M.loan, x);
@@ -969,7 +1039,9 @@ function start(){
              shoppers:M.shoppers.accuracy, parkinsons:M.parkinsons.accuracy,
              newsgroups:M.newsgroups.accuracy, mnistcnn:M.mnistcnn_meta.accuracy, bean:M.bean.accuracy,
              cover:M.cover.accuracy, steel:M.steel.accuracy, letter:M.letter.accuracy,
-             iono:M.iono.accuracy, glass:M.glass.accuracy, wave:M.wave.accuracy};
+             iono:M.iono.accuracy, glass:M.glass.accuracy, wave:M.wave.accuracy,
+             credit:M.credit.accuracy, banknote:M.banknote.accuracy, pageblocks:M.pageblocks.accuracy,
+             vehicle:M.vehicle.accuracy, yeast:M.yeast.accuracy};
   document.querySelectorAll('.card').forEach((card,i)=>{
     const p=PROJECTS[i], el=card.querySelector('.nb-acc');
     if(p.id==='chatbot'){ el.textContent='9/9 intent checks'; return; }
@@ -1019,6 +1091,11 @@ function start(){
   document.getElementById('glass_fields').innerHTML = fieldsHTML('glass', M.glass.features, M.glass.defaults);
   document.getElementById('news_fields').innerHTML = fieldsHTML('news', M.news.features, M.news.defaults);
   document.getElementById('wave_fields').innerHTML = fieldsHTML('wave', M.wave.features, M.wave.defaults);
+  document.getElementById('credit_fields').innerHTML = fieldsHTML('credit', M.credit.features, M.credit.defaults);
+  document.getElementById('banknote_fields').innerHTML = fieldsHTML('banknote', M.banknote.features, M.banknote.defaults);
+  document.getElementById('pageblocks_fields').innerHTML = fieldsHTML('pageblocks', M.pageblocks.features, M.pageblocks.defaults);
+  document.getElementById('vehicle_fields').innerHTML = fieldsHTML('vehicle', M.vehicle.features, M.vehicle.defaults);
+  document.getElementById('yeast_fields').innerHTML = fieldsHTML('yeast', M.yeast.features, M.yeast.defaults);
   document.getElementById('adult_fields').innerHTML = fieldsHTML('adult', M.adult.features, M.adult.defaults);
   document.getElementById('bike_fields').innerHTML = fieldsHTML('bike', M.bike.features, M.bike.defaults);
   document.getElementById('har_sel').innerHTML = M.har.samples.map((s,i)=>`<option value="${i}">Sensor window #${i+1}</option>`).join('');
@@ -1054,7 +1131,8 @@ fetch('models.json').then(r=>{ if(!r.ok) throw 0; return r.json(); })
   'models/m_mnistcnn_8.json','models/m_mnistcnn_9.json','models/m_mnistcnn_10.json',
   'models/m_tabular5.json','models/m_bean.json',
   'models/m_tabular6.json','models/m_softmax8.json',
-  'models/m_tabular7.json','models/m_softmax9.json'
+  'models/m_tabular7.json','models/m_softmax9.json',
+  'models/m_softmax10.json'
  ].map(u=>fetch(u).then(r=>r.json()))).then(parts=>{
   M = Object.assign({}, ...parts);
   M.mnist = Object.assign({}, M.mnist_meta, {W1: [...parts[5].W1part, ...parts[6].W1part, ...parts[7].W1part, ...parts[8].W1part]});
