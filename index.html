@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI Projects Lab — 35 Working Machine-Learning Apps</title>
-<meta name="description" content="Thirty-five real machine-learning projects you can use right in your browser — sentiment analysis, spam & fraud detection, fake-news detection, digit, clothing & activity recognition, churn, credit risk, a movie recommender, CIFAR-10 and CNN image AI and more. Free, no sign-up.">
+<title>AI Projects Lab — 40 Working Machine-Learning Apps</title>
+<meta name="description" content="Forty real machine-learning projects you can use right in your browser — sentiment analysis, spam & fraud detection, fake-news detection, digit, clothing & activity recognition, churn, credit risk, a movie recommender, CIFAR-10 and CNN image AI and more. Free, no sign-up.">
 <style>
   :root{--bg:#0b1020;--card:#131a30;--card2:#0f1528;--line:#24304f;--txt:#e8ecf6;--mut:#9aa7c7;--acc:#4f8cff;--good:#2fbf71;--bad:#ff5d5d;--warn:#ffb020}
   *{box-sizing:border-box;margin:0;padding:0}
@@ -54,7 +54,7 @@
 <body>
 <header>
   <h1>AI Projects <span>Lab</span></h1>
-  <p>Thirty-five real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, chat, upload and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
+  <p>Forty real machine-learning projects — not screenshots, <b>working apps</b>. Type, draw, chat, upload and predict: every model runs live in your browser. Free, no sign-up, nothing leaves your device.</p>
   <a class="ghbtn" href="https://github.com/ikram6566/ai-projects-portfolio" target="_blank" rel="noopener">📂 Notebooks &amp; code on GitHub</a>
 </header>
 <main>
@@ -434,6 +434,36 @@ const PROJECTS = [
    <button class="go" onclick="runBean()">Classify bean</button>
    <div class="result" id="bn_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="bn_all"></div></div>
    <div class="note">Trained on 13,611 photographed beans (UCI). Shape really is nearly a fingerprint here — 92.4% accuracy.</div>`},
+ {id:'cover', icon:'🌲', name:'Forest Cover Type Classifier', folder:'36-forest-cover-type',
+  desc:'Colorado wilderness, patch by patch: elevation, slope and distances in — which of 7 tree cover types grows there, out?',
+  panel:()=>`<details><summary style="cursor:pointer;color:var(--mut);font-size:.85rem">Edit the 10 terrain measurements (defaults are medians)</summary><div class="row3" id="cover_fields" style="margin-top:8px"></div></details>
+   <button class="go" onclick="runCover()">Classify cover type</button>
+   <div class="result" id="cv_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="cv_all"></div></div>
+   <div class="note">Browser demo uses only the 10 continuous terrain features (logistic model, 69.8%); the notebook adds soil/wilderness data and its Random Forest reaches 90.8% on 581,012 patches.</div>`},
+ {id:'steel', icon:'🏭', name:'Steel Plate Fault Classifier', folder:'37-steel-plates-faults',
+  desc:'Steel-mill quality control: 27 plate measurements in — which surface fault is it: pastry, scratch, stains, dirtiness, bumps…?',
+  panel:()=>`<details><summary style="cursor:pointer;color:var(--mut);font-size:.85rem">Edit the 27 plate measurements (defaults are medians)</summary><div class="row3" id="steel_fields" style="margin-top:8px"></div></details>
+   <button class="go" onclick="runSteel()">Classify fault</button>
+   <div class="result" id="st_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="st_all"></div></div>
+   <div class="note">Trained on 1,941 inspected plates (UCI). This browser model matches the notebook's logistic regression (72.2%); its Random Forest reaches 79.6%.</div>`},
+ {id:'abalone', icon:'🐚', name:'Abalone Age Estimator', folder:'38-abalone-age-prediction',
+  desc:'Ageing an abalone normally means cutting its shell and counting rings. Estimate the ring count from size and weight instead.',
+  panel:()=>`<div class="row" id="abalone_fields"></div>
+   <button class="go" onclick="runAbalone()">Estimate rings</button>
+   <div class="result" id="ab_res"><div class="verdict"></div><div class="bar"><i style="background:var(--acc)"></i></div><div class="pct note"></div></div>
+   <div class="note">Famously hard dataset: measurements only partly determine age. Age ≈ rings + 1.5 years. Browser linear model R² 0.546; notebook Random Forest R² 0.537, MAE 1.55 rings.</div>`},
+ {id:'turbine', icon:'⚙️', name:'Gas Turbine CO Estimator', folder:'39-gas-turbine-emissions',
+  desc:'Predictive emission monitoring: 9 turbine process sensors in — carbon monoxide concentration out, no gas analyser needed.',
+  panel:()=>`<div class="row" id="turbine_fields"></div>
+   <button class="go" onclick="runTurbine()">Estimate CO</button>
+   <div class="result" id="tb_res"><div class="verdict"></div><div class="bar"><i style="background:var(--acc)"></i></div><div class="pct note"></div></div>
+   <div class="note">Trained on 36,733 hourly records from a real turbine (UCI). Browser linear model R² 0.567; the notebook's Random Forest reaches R² 0.777, MAE 0.484 mg/m³.</div>`},
+ {id:'letter', icon:'🔤', name:'Letter Recognizer (A–Z)', folder:'40-letter-recognition',
+  desc:'The original OCR benchmark: a capital letter reduced to 16 shape statistics. Set the statistics — which letter is it?',
+  panel:()=>`<details><summary style="cursor:pointer;color:var(--mut);font-size:.85rem">Edit the 16 shape statistics (defaults are medians)</summary><div class="row3" id="letter_fields" style="margin-top:8px"></div></details>
+   <button class="go" onclick="runLetter()">Recognize letter</button>
+   <div class="result" id="lt_res"><div class="verdict"></div><div class="bar"><i></i></div><div class="pct note"></div><div class="note" id="lt_all"></div></div>
+   <div class="note">20,000 letters in 20 fonts (UCI). Browser logistic model: 77.1% across all 26 letters (guessing scores 3.8%); the notebook's Random Forest reaches 97.0%.</div>`},
 ];
 
 const grid=document.getElementById('grid');
@@ -714,6 +744,36 @@ function runBean(){
   showResult('bn_res', '🫘 Variety: ' + M.bean.classes[order[0][1]], order[0][0], null);
   document.getElementById('bn_all').textContent = 'All varieties: ' + order.map(([v, i]) => M.bean.classes[i] + ' ' + (v * 100).toFixed(1) + '%').join(' · ');
 }
+const COVER_NAMES = {'1':'Spruce/Fir','2':'Lodgepole Pine','3':'Ponderosa Pine','4':'Cottonwood/Willow','5':'Aspen','6':'Douglas-fir','7':'Krummholz'};
+function runCover(){
+  const p = softmaxTab(M.cover, readFields('cover', M.cover.features));
+  const order = p.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+  const top = M.cover.classes[order[0][1]];
+  showResult('cv_res', '🌲 Cover type: ' + (COVER_NAMES[top] || top) + ' (type ' + top + ')', order[0][0], null);
+  document.getElementById('cv_all').textContent = 'All types: ' + order.map(([v, i]) => (COVER_NAMES[M.cover.classes[i]] || M.cover.classes[i]) + ' ' + (v * 100).toFixed(1) + '%').join(' · ');
+}
+function runSteel(){
+  const p = softmaxTab(M.steel, readFields('steel', M.steel.features));
+  const order = p.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+  showResult('st_res', '🏭 Fault: ' + M.steel.classes[order[0][1]], order[0][0], null);
+  document.getElementById('st_all').textContent = 'All faults: ' + order.map(([v, i]) => M.steel.classes[i] + ' ' + (v * 100).toFixed(1) + '%').join(' · ');
+}
+function runAbalone(){
+  const v = Math.max(0, linear(M.abalone, readFields('abalone', M.abalone.features)));
+  linResult('ab_res', '🐚 Estimated rings: ', v.toFixed(1), ' (≈ ' + (v + 1.5).toFixed(1) + ' years old)', M.abalone,
+    'Linear browser model: R² ' + M.abalone.r2 + ', average error ±' + M.abalone.mae + ' rings (notebook Random Forest: R² 0.537, MAE 1.55).');
+}
+function runTurbine(){
+  const v = Math.max(0, linear(M.turbine, readFields('turbine', M.turbine.features)));
+  linResult('tb_res', '⚙️ Estimated CO: ', v.toFixed(2), ' mg/m³', M.turbine,
+    'Linear browser model: R² ' + M.turbine.r2 + ', average error ±' + M.turbine.mae + ' mg/m³ (notebook Random Forest: R² 0.777, MAE 0.484).');
+}
+function runLetter(){
+  const p = softmaxTab(M.letter, readFields('letter', M.letter.features));
+  const order = p.map((v, i) => [v, i]).sort((a, b) => b[0] - a[0]);
+  showResult('lt_res', '🔤 Letter: ' + M.letter.classes[order[0][1]], order[0][0], null);
+  document.getElementById('lt_all').textContent = 'Top guesses: ' + order.slice(0, 5).map(([v, i]) => M.letter.classes[i] + ' ' + (v * 100).toFixed(1) + '%').join(' · ');
+}
 function runLoan(){
   const x = readFields('loan', M.loan.features);
   const p = scaledLR(M.loan, x);
@@ -845,7 +905,8 @@ function start(){
              agnews:M.agnews.accuracy, bank:M.bank.accuracy, cifar:M.cifar.accuracy,
              adult:M.adult.accuracy, har:M.har.accuracy, mushroom:M.mushroom.accuracy,
              shoppers:M.shoppers.accuracy, parkinsons:M.parkinsons.accuracy,
-             newsgroups:M.newsgroups.accuracy, mnistcnn:M.mnistcnn_meta.accuracy, bean:M.bean.accuracy};
+             newsgroups:M.newsgroups.accuracy, mnistcnn:M.mnistcnn_meta.accuracy, bean:M.bean.accuracy,
+             cover:M.cover.accuracy, steel:M.steel.accuracy, letter:M.letter.accuracy};
   document.querySelectorAll('.card').forEach((card,i)=>{
     const p=PROJECTS[i], el=card.querySelector('.nb-acc');
     if(p.id==='chatbot'){ el.textContent='9/9 intent checks'; return; }
@@ -858,6 +919,8 @@ function start(){
     if(p.id==='energy'){ el.textContent='R² '+M.energy.r2.toFixed(3)+' linear (notebook RF: 0.998)'; return; }
     if(p.id==='pm25'){ el.textContent='R² '+M.pm25.r2.toFixed(3)+' linear (notebook RF: 0.840)'; return; }
     if(p.id==='car'){ el.textContent='R² '+M.car.r2.toFixed(3)+' linear (notebook RF: 0.893)'; return; }
+    if(p.id==='abalone'){ el.textContent='R² '+M.abalone.r2.toFixed(3)+' linear (notebook RF: 0.537)'; return; }
+    if(p.id==='turbine'){ el.textContent='R² '+M.turbine.r2.toFixed(3)+' linear (notebook RF: 0.777)'; return; }
     el.textContent = (p.id==='house' ? 'R² ' : '') + (acc[p.id]*100).toFixed(1) + (p.id==='house'?'':'%');
   });
   document.getElementById('house_fields').innerHTML = fieldsHTML('house', M.house.features, M.house.defaults);
@@ -881,6 +944,11 @@ function start(){
   document.getElementById('pm25_fields').innerHTML = fieldsHTML('pm25', M.pm25.features, M.pm25.defaults);
   document.getElementById('car_fields').innerHTML = fieldsHTML('car', M.car.features, M.car.defaults);
   document.getElementById('bean_fields').innerHTML = fieldsHTML('bean', M.bean.features, M.bean.defaults);
+  document.getElementById('cover_fields').innerHTML = fieldsHTML('cover', M.cover.features, M.cover.defaults);
+  document.getElementById('steel_fields').innerHTML = fieldsHTML('steel', M.steel.features, M.steel.defaults);
+  document.getElementById('abalone_fields').innerHTML = fieldsHTML('abalone', M.abalone.features, M.abalone.defaults);
+  document.getElementById('turbine_fields').innerHTML = fieldsHTML('turbine', M.turbine.features, M.turbine.defaults);
+  document.getElementById('letter_fields').innerHTML = fieldsHTML('letter', M.letter.features, M.letter.defaults);
   document.getElementById('adult_fields').innerHTML = fieldsHTML('adult', M.adult.features, M.adult.defaults);
   document.getElementById('bike_fields').innerHTML = fieldsHTML('bike', M.bike.features, M.bike.defaults);
   document.getElementById('har_sel').innerHTML = M.har.samples.map((s,i)=>`<option value="${i}">Sensor window #${i+1}</option>`).join('');
@@ -914,7 +982,8 @@ fetch('models.json').then(r=>{ if(!r.ok) throw 0; return r.json(); })
   'models/m_mnistcnn_0.json','models/m_mnistcnn_1.json','models/m_mnistcnn_2.json','models/m_mnistcnn_3.json',
   'models/m_mnistcnn_4.json','models/m_mnistcnn_5.json','models/m_mnistcnn_6.json','models/m_mnistcnn_7.json',
   'models/m_mnistcnn_8.json','models/m_mnistcnn_9.json','models/m_mnistcnn_10.json',
-  'models/m_tabular5.json','models/m_bean.json'
+  'models/m_tabular5.json','models/m_bean.json',
+  'models/m_tabular6.json','models/m_softmax8.json'
  ].map(u=>fetch(u).then(r=>r.json()))).then(parts=>{
   M = Object.assign({}, ...parts);
   M.mnist = Object.assign({}, M.mnist_meta, {W1: [...parts[5].W1part, ...parts[6].W1part, ...parts[7].W1part, ...parts[8].W1part]});
